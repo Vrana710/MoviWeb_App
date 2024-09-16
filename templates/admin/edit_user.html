@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Edit User - MoviWeb</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+    <link rel="stylesheet" href="../../static/css/main.css"/>
+    <noscript>
+        <link rel="stylesheet" href="../../static/css/noscript.css"/>
+    </noscript>
+</head>
+<body class="is-preload">
+
+<!-- Wrapper -->
+<div id="wrapper">
+
+    <!-- Header -->
+    <header id="header" class="alt">
+        <a href="{{ url_for('admin_bp.admin_dashboard') }}" class="logo"><strong>MoviWeb</strong> <span>Edit User</span></a>
+        <nav>
+            <a href="#menu">Menu</a>
+        </nav>
+    </header>
+
+    <!-- Menu -->
+    <nav id="menu">
+        <ul class="links">
+            <li><a href="{{ url_for('admin_bp.admin_dashboard') }}">Home</a></li>
+            <li><a href="{{ url_for('admin_bp.add_user') }}">Add Users</a></li>
+            <li><a href="{{ url_for('admin_bp.manage_users') }}">Manage Users</a></li>
+            <li><a href="{{ url_for('admin_bp.add_movie') }}">Add Movies</a></li>
+            <li><a href="{{ url_for('admin_bp.manage_movies') }}">Manage Movies</a></li>
+            <li><a href="{{ url_for('admin_bp.reports') }}">Reports</a></li>
+        </ul>
+        <ul class="actions stacked">
+            <li><a href="{{ url_for('logout') }}" class="button primary fit">Log Out</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main -->
+    <div id="main">
+        <section id="edit-user">
+            <div class="inner">
+                <header class="major">
+                    <h2>Edit User</h2>
+                </header>
+                <!-- Form for Editing Profile -->
+                <form method="POST" action="{{ url_for('admin_bp.edit_user', user_id=user.id) }}"
+                      enctype="multipart/form-data">
+                    <!-- Profile Picture -->
+                    <div class="profile-image">
+                        {% if user.profile_picture %}
+                        <img src="{{ url_for('static', filename='images/upload/profile_image/' ~ user.profile_picture) }}"
+                             alt="Profile Picture" class="profile-pic"/>
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/default_profile.png') }}"
+                             alt="Default Profile Picture" class="profile-pic"/>
+                        {% endif %}
+
+                        <label for="profile_picture">Change Profile Picture:</label>
+                        <input type="file" id="profile_picture" name="profile_picture"/>
+                    </div>
+
+                    <!-- User Info Fields -->
+                    <div class="field">
+                        <label for="name">Name:</label>
+                        <input type="text" id="name" name="name" value="{{ user.name }}" required/>
+                    </div>
+
+                    <div class="field">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" value="{{ user.email }}" required/>
+                    </div>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" id="password" value="{{ user.password }}" required/>
+                    </div>
+                    <div class="field">
+                        <label for="gender">Gender:</label>
+                        <select id="gender" name="gender">
+                            <option value="" {% if not user.gender %}selected{% endif %}>Not Specified</option>
+                            <option value="Male" {% if user.gender=='Male' %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if user.gender=='Female' %}selected{% endif %}>Female</option>
+                            <option value="Other" {% if user.gender=='Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                    <!-- Submit Button -->
+                    <button type="submit" class="button primary">Save Changes</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer id="footer">
+        <div class="inner">
+            <ul class="icons">
+                <li><a href="https://x.com/?lang=en" class="icon brands alt fa-twitter"><span
+                        class="label">Twitter</span></a></li>
+                <li><a href="https://www.facebook.com/" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a>
+                </li>
+                <li><a href="https://www.instagram.com/" class="icon brands alt fa-instagram"><span class="label">Instagram</span></a>
+                </li>
+                <li><a href="https://github.com/Vrana710" class="icon brands alt fa-github"><span
+                        class="label">GitHub</span></a></li>
+                <li><a href="https://www.linkedin.com/in/varsha-rana/" class="icon brands alt fa-linkedin-in"><span
+                        class="label">LinkedIn</span></a></li>
+            </ul>
+            <ul class="copyright">
+                <li>&copy; 2024</li>
+                <li>Design: <a href="https://www.linkedin.com/in/varsha-rana/">By Varsha Rana</a></li>
+            </ul>
+        </div>
+    </footer>
+
+</div>
+
+<!-- Scripts -->
+<script src="../../static/js/jquery.min.js"></script>
+<script src="../../static/js/jquery.scrolly.min.js"></script>
+<script src="../../static/js/jquery.scrollex.min.js"></script>
+<script src="../../static/js/browser.min.js"></script>
+<script src="../../static/js/breakpoints.min.js"></script>
+<script src="../../static/js/util.js"></script>
+<script src="../../static/js/main.js"></script>
+
+</body>
+</html>

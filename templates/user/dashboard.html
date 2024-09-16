@@ -1,0 +1,150 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>User Dashboard - MoviWeb</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+    <link rel="stylesheet" href="../../static/css/main.css"/>
+    <noscript>
+        <link rel="stylesheet" href="../../static/css/noscript.css"/>
+    </noscript>
+    <style>
+        .movie-poster {
+            width: 180px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .imdb-link {
+            color: #f5c518; /* IMDb yellow */
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 10px;
+            display: inline-block;
+            cursor: pointer; /* Ensures the cursor changes to a pointer when hovering */
+        }
+
+        .imdb-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="is-preload">
+
+<!-- Wrapper -->
+<div id="wrapper">
+
+    <!-- Header -->
+    <header id="header" class="alt">
+        <a href="{{ url_for('user_bp.user_dashboard') }}" class="logo"><strong>MoviWeb</strong>
+            <span>User Dashboard</span></a>
+        <nav>
+            <a href="#menu">Menu</a>
+        </nav>
+    </header>
+
+    <!-- Menu -->
+    <nav id="menu">
+        <ul class="links">
+            <li><a href="{{ url_for('user_bp.user_dashboard') }}">Home</a></li>
+            <li><a href="{{ url_for('user_bp.my_movies') }}">My Movies</a></li>
+            <li><a href="{{ url_for('user_bp.user_favorites') }}">My Favorites</a></li>
+            <li><a href="{{ url_for('user_bp.user_add_movie') }}">Add Movie</a></li>
+            <li><a href="{{ url_for('user_bp.user_profile') }}">Profile</a></li>
+        </ul>
+        <ul class="actions stacked">
+            <li><a href="{{ url_for('logout') }}" class="button primary fit">Log Out</a></li>
+        </ul>
+    </nav>
+
+    <!-- Banner -->
+    <section id="banner" class="major">
+        <div class="inner">
+            <header class="major">
+                <h1>Welcome Back, {{ user.name }}</h1>
+            </header>
+            <div class="content">
+                <p>Your personal movie tracker and favorite movies database.<br/>
+                    Discover new releases and manage your collection with ease.</p>
+                <ul class="actions">
+                    <li><a href="{{ url_for('user_bp.user_add_movie') }}" class="button next">Add New Movie</a></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main -->
+    <div id="main">
+
+        <!-- Latest Movies -->
+        <section id="latest-movies" class="tiles">
+            {% for movie in latest_movies %}
+
+            <article>
+                <header>
+                    <h3>{{ movie.title }}</h3>
+                </header>
+                <div class="content">
+                    <p>
+                        <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
+                            <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
+                                 title="{{ movie.title }}">
+                        </a>
+                        <br/>
+                        Year: {{ movie.year }} Rating: {{ movie.rating }}
+                    </p>
+                </div>
+            </article>
+
+            {% endfor %}
+        </section>
+
+        <!-- User Statistics -->
+        <section id="stats">
+            <div class="inner">
+                <header class="major">
+                    <h2>Your Stats</h2>
+                </header>
+                <p>Track your movie-watching statistics and trends.</p>
+                <!-- Include some statistics and data here -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer id="footer">
+        <div class="inner">
+            <ul class="icons">
+                <li><a href="https://x.com/?lang=en" class="icon brands alt fa-twitter"><span
+                        class="label">Twitter</span></a></li>
+                <li><a href="https://www.facebook.com/" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a>
+                </li>
+                <li><a href="https://www.instagram.com/" class="icon brands alt fa-instagram"><span class="label">Instagram</span></a>
+                </li>
+                <li><a href="https://github.com/Vrana710" class="icon brands alt fa-github"><span
+                        class="label">GitHub</span></a></li>
+                <li><a href="https://www.linkedin.com/in/varsha-rana/" class="icon brands alt fa-linkedin-in"><span
+                        class="label">LinkedIn</span></a></li>
+            </ul>
+            <ul class="copyright">
+                <li>&copy; 2024</li>
+                <li>Design: <a href="https://www.linkedin.com/in/varsha-rana/">By Varsha Rana</a></li>
+            </ul>
+        </div>
+    </footer>
+
+</div>
+
+<!-- Scripts -->
+<script src="../../static/js/jquery.min.js"></script>
+<script src="../../static/js/jquery.scrolly.min.js"></script>
+<script src="../../static/js/jquery.scrollex.min.js"></script>
+<script src="../../static/js/browser.min.js"></script>
+<script src="../../static/js/breakpoints.min.js"></script>
+<script src="../../static/js/util.js"></script>
+<script src="../../static/js/main.js"></script>
+
+</body>
+</html>
