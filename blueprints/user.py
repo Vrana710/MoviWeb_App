@@ -22,18 +22,48 @@ user_bp = Blueprint('user_bp', __name__,
 @user_bp.route('/dashboard')
 def user_dashboard():
     if 'user_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))  # Redirect to login page if not authenticated
 
     user_id = session['user_id']
     user = User.query.get(user_id)
     latest_movies = Movie.query.order_by(Movie.id.desc()).limit(5).all()  # Latest movies
 
-    return render_template('dashboard.html', user=user, latest_movies=latest_movies)
+    # Query to get the favorite movies of the user with pagination
+    user_favorites_query = (
+        Movie.query.join(Favorite)
+        .filter(Favorite.user_id == user_id, Favorite.movie_id == Movie.id)
+    )
+
+    # Count the total number of favorite movies
+    num_favorites = user_favorites_query.count()
+
+    return render_template('dashboard.html',
+                           user=user,
+                           latest_movies=latest_movies,
+                           num_favorites=num_favorites)
 
 
 @user_bp.route('/my_movies')
 def my_movies():
     if 'user_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
 
     user_id = session['user_id']
@@ -61,7 +91,16 @@ def my_movies():
 @user_bp.route('/user_favorites')
 def user_favorites():
     if 'user_id' not in session:
-        return redirect(url_for('user_bp.login'))
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
+        return redirect(url_for('login'))
 
     user_id = session['user_id']
     page = request.args.get('page', 1, type=int)  # Get the current page from query parameters, default to 1
@@ -85,6 +124,15 @@ def user_favorites():
 @user_bp.route('/add_to_favorites/<int:movie_id>', methods=['POST'])
 def add_to_favorites(movie_id):
     if 'user_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
 
     user_id = session['user_id']
@@ -117,6 +165,15 @@ def add_to_favorites(movie_id):
 @user_bp.route('/remove_from_favorites/<int:movie_id>', methods=['POST'])
 def remove_from_favorites(movie_id):
     if 'user_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
 
     user_id = session['user_id']
@@ -148,6 +205,15 @@ def remove_from_favorites(movie_id):
 @user_bp.route('/user_add_movie', methods=['GET', 'POST'])
 def user_add_movie():
     if 'user_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
 
     if request.method == 'POST':
@@ -180,12 +246,18 @@ def user_add_movie():
                 db.session.add(director)
                 db.session.commit()
 
+            # Handle rating conversion with error handling
+            try:
+                rating = float(movie_data.get('imdbRating', 0))
+            except ValueError:
+                rating = 0  # Default to 0 if conversion fails
+
             # Create the movie object with the director's ID
             new_movie = Movie(
                 title=title,
                 director_id=director.id,
                 year=movie_data.get('Year') or None,
-                rating=float(movie_data.get('imdbRating', 0)) if movie_data.get('imdbRating') else 0,
+                rating=rating,
                 # Handle 'Poster' field, using default if it's 'N/A' or missing
                 poster=movie_data.get('Poster')
                 if movie_data.get('Poster') and movie_data.get('Poster') != 'N/A'
@@ -229,6 +301,15 @@ def user_add_movie():
 @user_bp.route('/user_profile')
 def user_profile():
     if 'user_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
 
     user_id = session['user_id']
@@ -246,6 +327,18 @@ def allowed_file(filename):
 
 @user_bp.route('/edit_user_profile/<int:user_id>', methods=['GET', 'POST'])
 def edit_user_profile(user_id):
+    if 'user_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
+        return redirect(url_for('login'))
+
     user = User.query.get_or_404(user_id)
 
     if request.method == 'POST':

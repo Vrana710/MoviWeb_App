@@ -3,7 +3,7 @@ from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
-from models import db, User, Admin, Contact, Movie
+from models import db, User, Admin, Contact, Movie, Director, Genre
 from blueprints.admin import admin_bp
 from blueprints.user import user_bp
 from flask_caching import Cache
@@ -11,9 +11,6 @@ from flask_migrate import Migrate
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
-
-# Set up the cache configuration
-cache = Cache()
 
 db_directory = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'db')
 if not os.path.exists(db_directory):
@@ -34,7 +31,8 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# Initialize cache
+# Configure and initialize cache
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 cache.init_app(app)
 
 # Register Blueprints
@@ -64,10 +62,48 @@ def favorites():
     return render_template('favorites.html')
 
 
-@app.route('/movies')
-def movies():
-    movie = Movie.query.all()
-    return render_template('movies.html', movies=movie)
+@app.route('/movies_home')
+def movies_home():
+    # Fetch pagination and sorting parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 10  # Items per page
+    sort_column = request.args.get('sort', 'title')  # Default sorting by title
+    sort_order = request.args.get('order', 'asc')  # Default order ascending
+
+    # Define sorting columns
+    sort_options = {
+        'title': Movie.title,
+        'director': Director.name,
+        'year': Movie.year,
+        'rating': Movie.rating,
+        'genre': Genre.name  # This will require proper joining with Genre
+    }
+
+    # Get the sort key, default to Movie.title
+    sort = sort_options.get(sort_column, Movie.title)
+
+    # Apply sorting order
+    if sort_order == 'desc':
+        sort = sort.desc()
+    else:
+        sort = sort.asc()
+
+    # Use left outer joins for Director and Genre relationships
+    movies_query = Movie.query \
+        .outerjoin(Movie.director) \
+        .outerjoin(Movie.genres) \
+        .order_by(sort) \
+        .paginate(page=page, per_page=per_page)
+
+    # Get total number of movies
+    num_movies = movies_query.total
+
+    # Pass movies and sorting information to the template
+    return render_template('movies_home.html',
+                           num_movies=num_movies,
+                           movies=movies_query,
+                           sort_column=sort_column,
+                           sort_order=sort_order)
 
 
 @app.route('/contact', methods=['GET', 'POST'])
@@ -164,31 +200,61 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        # Try to find the email in the Admin table first
+        # Check for Admin first
         admin = Admin.query.filter_by(email=email).first()
-        if admin and admin.check_password(password):
-            session['admin_id'] = admin.id  # Store admin ID in session
-            flash('Admin login successful!', 'success')
-            return redirect(url_for('admin_bp.admin_dashboard'))  # Example admin dashboard
+        if admin:
+            if admin.check_password(password):
+                # Assuming `check_password` is a method that verifies the hashed password
+                session.clear()  # Clear any previous session data
+                session['admin_id'] = admin.id  # Store admin ID in session
+                flash('Admin login successful!', 'success')
+                return redirect(url_for('admin_bp.admin_dashboard'))  # Redirect to the admin dashboard
+            else:
+                flash('Invalid password for admin', 'danger')  # Password doesn't match for admin
+                return redirect(url_for('login'))  # Redirect back to login page
 
-        # If no admin found, check the User table
+        # If no admin found, check for the user
         user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password):
-            session['user_id'] = user.id  # Store user ID in session
-            flash('User login successful!', 'success')
-            return redirect(url_for('user_bp.user_dashboard'))  # Redirect user dashboard
+        if user:
+            if user.check_password(password):
+                # Assuming `check_password` is a method that verifies the hashed password
+                session.clear()  # Clear any previous session data
+                session['user_id'] = user.id  # Store user ID in session
+                flash('User login successful!', 'success')
+                return redirect(url_for('user_bp.user_dashboard'))  # Redirect to the user dashboard
+            else:
+                flash('Invalid password for user', 'danger')  # Password doesn't match for user
+                return redirect(url_for('login'))  # Redirect back to login page
 
-        # If neither admin nor user is found
+        # If neither an admin nor user is found with the email
         flash('Invalid email or password', 'danger')
 
     return render_template('login.html')
 
 
+# Clear the cache
+def clear_cache():
+    if hasattr(cache, 'clear'):
+        cache.clear()
+        flash('Cache cleared successfully!', 'success')
+    else:
+        flash('Cache clearing functionality not available.', 'warning')
+    return redirect(url_for('home'))  # Redirect to a suitable page
+
+
 @app.route('/logout')
 def logout():
-    # Remove user or admin session data
-    session.pop('admin_id', None)
-    session.pop('user_id', None)
+    # Check if there is an admin session
+    if 'admin_id' in session:
+        session.pop('admin_id', None)
+        session.clear()
+        # flash('Admin session has been cleared.', 'info')
+
+    # Check if there is a user session
+    if 'user_id' in session:
+        session.pop('user_id', None)
+        session.clear()
+        # flash('User session has been cleared.', 'info')
 
     # Set headers to prevent browser caching
     response = make_response(redirect(url_for('login')))
@@ -203,17 +269,6 @@ def logout():
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
-
-
-# Clear the cache route
-@app.route('/clear_cache')
-def clear_cache():
-    if hasattr(cache, 'clear'):
-        cache.clear()
-        flash('Cache cleared successfully!', 'success')
-    else:
-        flash('Cache clearing functionality not available.', 'warning')
-    return redirect(url_for('index'))  # Redirect to a suitable page
 
 
 if __name__ == '__main__':

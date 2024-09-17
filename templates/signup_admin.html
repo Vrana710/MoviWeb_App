@@ -10,7 +10,6 @@
     </noscript>
 </head>
 <body class="is-preload">
-
 <!-- Wrapper -->
 <div id="wrapper">
 
@@ -29,6 +28,21 @@
 
     <!-- Main -->
     <div id="main">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
+                <span>{{ message }}</span>
+                {% if category in ['danger', 'info'] %}
+                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
         <section id="signup">
             <div class="inner">
                 <header class="major">
@@ -51,6 +65,8 @@
                     </div>
                     <ul class="actions">
                         <li><input type="submit" value="Sign Up" class="primary"/></li>
+                        <li><a href="{{ url_for('login') }}"><input type="submit" value="Log In" class="primary"/></a>
+                        </li>
                     </ul>
                 </form>
             </div>
@@ -72,6 +88,6 @@
 <script src="../static/js/breakpoints.min.js"></script>
 <script src="../static/js/util.js"></script>
 <script src="../static/js/main.js"></script>
-
+<script src="../static/js/message.js"></script>
 </body>
 </html>

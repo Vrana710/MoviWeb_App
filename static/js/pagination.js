@@ -106,5 +106,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Handle pagination for movie web app movies list
+    const paginationContainerWebAppMovies = document.querySelector('#pagination-container-movies-web-app');
+    if (paginationContainerWebAppMovies) {
+        paginationContainerWebAppMovies.addEventListener('click', async (event) => {
+            if (event.target.classList.contains('page-link')) {
+                event.preventDefault();
+                const href = event.target.getAttribute('href');
+                const response = await fetch(href);
+                if (response.ok) {
+                    const data = await response.text();
+                    document.querySelector('#main').innerHTML = data;
+                } else {
+                    console.error('Failed to load page');
+                }
+            }
+        });
+    }
 });
 

@@ -1,7 +1,6 @@
 from models import User, Movie, Director, Admin, Genre, db
 from datamanager.data_manager_interface import DataManagerInterface
 
-
 class SQLiteDataManager(DataManagerInterface):
 
     def __init__(self, app):
@@ -55,7 +54,8 @@ class SQLiteDataManager(DataManagerInterface):
             year=movie_data.get('year'),
             rating=movie_data.get('rating'),
             plot=movie_data.get('plot', ''),
-            poster=movie_data.get('poster', '')
+            poster=movie_data.get('poster', ''),
+            imdbID=movie_data.get('imdbID')  # Added IMDb ID if provided
         )
         self.db.session.add(new_movie)
         self.db.session.commit()
@@ -87,6 +87,7 @@ class SQLiteDataManager(DataManagerInterface):
             movie.year = new_data.get('year')
             movie.rating = new_data.get('rating')
             movie.admin_id = new_data.get('admin_id')  # Optionally re-assign to an admin
+            movie.imdbID = new_data.get('imdbID')  # Update IMDb ID if provided
 
             # Clear existing genres and add new ones
             movie.genres = []

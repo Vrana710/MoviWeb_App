@@ -2,11 +2,13 @@
 <html>
 <head>
     <title>MoviWeb App</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-	<link rel="stylesheet" href="../static/css/main.css" />
-	<noscript><link rel="stylesheet" href="../static/css/noscript.css" /></noscript>
-  <style>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+    <link rel="stylesheet" href="../static/css/main.css"/>
+    <noscript>
+        <link rel="stylesheet" href="../static/css/noscript.css"/>
+    </noscript>
+    <style>
         .movie-poster {
             width: 180px;
             height: auto;
@@ -29,147 +31,161 @@
     </style>
 </head>
 <body class="is-preload">
+<!-- Wrapper -->
+<div id="wrapper">
 
-    <!-- Wrapper -->
-    <div id="wrapper">
-
-        <!-- Header -->
-        <header id="header" class="alt">
-            <a href="{{ url_for('home') }}" class="logo"><strong>MoviWeb</strong> <span>Your Movie Tracker</span></a>
-            <nav>
-                <a href="#menu">Menu</a>
-            </nav>
-        </header>
-
-        <!-- Menu -->
-        <nav id="menu">
-           {% include 'partials/movie_web_app_menu.html' %}
+    <!-- Header -->
+    <header id="header" class="alt">
+        <a href="{{ url_for('home') }}" class="logo"><strong>MoviWeb</strong> <span>Your Movie Tracker</span></a>
+        <nav>
+            <a href="#menu">Menu</a>
         </nav>
+    </header>
 
-        <!-- Banner -->
-        <section id="banner" class="major">
+    <!-- Menu -->
+    <nav id="menu">
+        {% include 'partials/movie_web_app_menu.html' %}
+    </nav>
+
+    <!-- Banner -->
+    <section id="banner" class="major">
+        <div class="inner">
+            <header class="major">
+                <h1>Welcome to MoviWeb</h1>
+            </header>
+            <div class="content">
+                <p>Your personal movie tracker and favorite movie's database.<br/>
+                    Discover, track, and manage your movie collection with ease.</p>
+                <ul class="actions">
+                    <li><a href="#one" class="button next scrolly">Get Started</a></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main -->
+    <div id="main">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
+                <span>{{ message }}</span>
+                {% if category in ['danger', 'info'] %}
+                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        <!-- One -->
+        <section id="one" class="tiles">
+            <article>
+                    <span class="image">
+                        <img src="../static/images/pic01.jpg" alt=""/>
+                    </span>
+                <header class="major">
+                    <h3><a href="{{ url_for('movies_home') }}" class="link">Latest Releases</a></h3>
+                    <p>Check out the latest movies</p>
+                </header>
+            </article>
+            <article>
+                {% for movie in movies %}
+                <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
+                    <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
+                         title="{{ movie.title }}">
+                </a>
+                {% endfor %}
+            </article>
+            <article>
+                    <span class="image">
+                        <img src="../static/images/pic03.jpg" alt=""/>
+                    </span>
+                <header class="major">
+                    <h3><a href="{{ url_for('about') }}" class="link">About Us</a></h3>
+                    <p>Learn more about MoviWeb</p>
+                </header>
+            </article>
+        </section>
+
+        <!-- Two -->
+        <section id="two">
             <div class="inner">
                 <header class="major">
-                    <h1>Welcome to MoviWeb</h1>
+                    <h2>Track Your Movies</h2>
                 </header>
-                <div class="content">
-                    <p>Your personal movie tracker and favorite movie's database.<br />
-                    Discover, track, and manage your movie collection with ease.</p>
-                    <ul class="actions">
-                        <li><a href="#one" class="button next scrolly">Get Started</a></li>
-                    </ul>
-                </div>
+                <p>MoviWeb allows you to track your favorite movies, discover new releases, and manage your collection
+                    effortlessly. Explore the latest trends and keep your movie library up to date.</p>
+                <ul class="actions">
+                    <li><a href="{{ url_for('signup_user') }}" class="button next">Get Started</a></li>
+                </ul>
             </div>
         </section>
 
-        <!-- Main -->
-        <div id="main">
+    </div>
 
-            <!-- One -->
-            <section id="one" class="tiles">
-                <article>
-                    <span class="image">
-                        <img src="../static/images/pic01.jpg" alt="" />
-                    </span>
-                    <header class="major">
-                        <h3><a href="{{ url_for('movies') }}" class="link">Latest Releases</a></h3>
-                        <p>Check out the latest movies</p>
-                    </header>
-                </article>
-                <article>
-                    {% for movie in movies %}
-                         <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
-                            <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
-                                 title="{{ movie.title }}">
-                        </a>
-                     {% endfor %}
-                </article>
-                <article>
-                    <span class="image">
-                        <img src="../static/images/pic03.jpg" alt="" />
-                    </span>
-                    <header class="major">
-                        <h3><a href="{{ url_for('about') }}" class="link">About Us</a></h3>
-                        <p>Learn more about MoviWeb</p>
-                    </header>
-                </article>
-            </section>
-
-            <!-- Two -->
-            <section id="two">
-                <div class="inner">
-                    <header class="major">
-                        <h2>Track Your Movies</h2>
-                    </header>
-                    <p>MoviWeb allows you to track your favorite movies, discover new releases, and manage your collection effortlessly. Explore the latest trends and keep your movie library up to date.</p>
+    <!-- Contact -->
+    <section id="contact">
+        <div class="inner">
+            <section>
+                <form method="post" action="{{ url_for('contact') }}">
+                    <div class="fields">
+                        <div class="field half">
+                            <label for="name">Name</label>
+                            <input type="text" name="name" id="name"/>
+                        </div>
+                        <div class="field half">
+                            <label for="email">Email</label>
+                            <input type="text" name="email" id="email"/>
+                        </div>
+                        <div class="field">
+                            <label for="message">Message</label>
+                            <textarea name="message" id="message" rows="6"></textarea>
+                        </div>
+                    </div>
                     <ul class="actions">
-                        <li><a href="{{ url_for('signup_user') }}" class="button next">Get Started</a></li>
+                        <li><input type="submit" value="Send Message" class="primary"/></li>
+                        <li><input type="reset" value="Clear"/></li>
                     </ul>
-                </div>
+                </form>
             </section>
-
-        </div>
-
-        <!-- Contact -->
-        <section id="contact">
-            <div class="inner">
+            <section class="split">
                 <section>
-                    <form method="post" action="{{ url_for('contact') }}">
-                        <div class="fields">
-                            <div class="field half">
-                                <label for="name">Name</label>
-                                <input type="text" name="name" id="name" />
-                            </div>
-                            <div class="field half">
-                                <label for="email">Email</label>
-                                <input type="text" name="email" id="email" />
-                            </div>
-                            <div class="field">
-                                <label for="message">Message</label>
-                                <textarea name="message" id="message" rows="6"></textarea>
-                            </div>
-                        </div>
-                        <ul class="actions">
-                            <li><input type="submit" value="Send Message" class="primary" /></li>
-                            <li><input type="reset" value="Clear" /></li>
-                        </ul>
-                    </form>
+                    <div class="contact-method">
+                        <span class="icon solid alt fa-envelope"></span>
+                        <h3>Email</h3>
+                        <a href="mailto:support@moviweb.com">support@moviweb.com</a>
+                    </div>
                 </section>
-                <section class="split">
-                    <section>
-                        <div class="contact-method">
-                            <span class="icon solid alt fa-envelope"></span>
-                            <h3>Email</h3>
-                            <a href="mailto:support@moviweb.com">support@moviweb.com</a>
-                        </div>
-                    </section>
-                    <section>
-                        <div class="contact-method">
-                            <span class="icon solid alt fa-phone"></span>
-                            <h3>Phone</h3>
-                            <span>(000) 000-0000</span>
-                        </div>
-                    </section>
+                <section>
+                    <div class="contact-method">
+                        <span class="icon solid alt fa-phone"></span>
+                        <h3>Phone</h3>
+                        <span>(000) 000-0000</span>
+                    </div>
                 </section>
-            </div>
-        </section>
+            </section>
+        </div>
+    </section>
 
-       <!-- Footer -->
+    <!-- Footer -->
     <footer id="footer">
         {% include 'partials/movie_web_app_footer.html' %}
     </footer>
 
-    </div>
+</div>
 
-    <!-- Scripts -->
-	<script src="../static/js/jquery.min.js"></script>
-	<script src="../static/js/jquery.scrolly.min.js"></script>
-	<script src="../static/js/jquery.scrollex.min.js"></script>
-	<script src="../static/js/browser.min.js"></script>
-	<script src="../static/js/breakpoints.min.js"></script>
-	<script src="../static/js/util.js"></script>
-	<script src="../static/js/main.js"></script>
-
+<!-- Scripts -->
+<script src="../static/js/jquery.min.js"></script>
+<script src="../static/js/jquery.scrolly.min.js"></script>
+<script src="../static/js/jquery.scrollex.min.js"></script>
+<script src="../static/js/browser.min.js"></script>
+<script src="../static/js/breakpoints.min.js"></script>
+<script src="../static/js/util.js"></script>
+<script src="../static/js/main.js"></script>
+<script src="../static/js/message.js"></script>
 
 </body>
 </html>

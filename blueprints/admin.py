@@ -25,7 +25,19 @@ admin_bp = Blueprint('admin_bp', __name__,
 @admin_bp.route('/admin_dashboard')
 def admin_dashboard():
     if 'admin_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
+
+    admin_id = session['admin_id']
+    admin = Admin.query.get(admin_id)
 
     num_users = User.query.count()
     num_movies = Movie.query.count()
@@ -45,13 +57,14 @@ def admin_dashboard():
     # Check if the request is an AJAX request
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # Render only the table and pagination
-        return render_template('partials/users_table.html', users_with_movies=users_with_movies)
+        return render_template('partials/users_table.html', users_with_movies=users_with_movies, admin=admin)
 
     # Render the full page
     return render_template('admin_dashboard.html',
                            num_users=num_users,
                            num_movies=num_movies,
-                           users_with_movies=users_with_movies)
+                           users_with_movies=users_with_movies,
+                           admin=admin)
 
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -71,6 +84,15 @@ def get_current_admin():
 @admin_bp.route('/add_user', methods=['GET', 'POST'])
 def add_user():
     if 'admin_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
 
     admin = get_current_admin()  # Fetch the current admin from session
@@ -107,14 +129,23 @@ def add_user():
         db.session.add(new_user)
         db.session.commit()
         flash('User registration successful!', 'success')
-        return redirect(url_for('admin_bp.manage_users'))
+        return redirect(url_for('admin_bp.manage_users', admin=admin))
 
-    return render_template('add_user.html')
+    return render_template('add_user.html', admin=admin)
 
 
 @admin_bp.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
 def edit_user(user_id):
     if 'admin_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
 
     user = User.query.get_or_404(user_id)
@@ -171,25 +202,49 @@ def edit_user(user_id):
         flash('User updated successfully!', 'success')
         return redirect(url_for('admin_bp.manage_users'))
 
-    return render_template('edit_user.html', user=user)
+    return render_template('edit_user.html', user=user, admin=admin)
 
 
 @admin_bp.route('/delete_user/<int:user_id>', methods=['POST'])
 def delete_user(user_id):
     if 'admin_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
+
+    admin_id = session['admin_id']
+    admin = Admin.query.get(admin_id)
 
     user = User.query.get_or_404(user_id)
     db.session.delete(user)
     db.session.commit()
-    return redirect(url_for('admin_bp.manage_users'))
+    flash('User deleted successfully!', 'success')
+    return redirect(url_for('admin_bp.manage_users', admin=admin))
 
 
 @admin_bp.route('/manage_users')
 def manage_users():
     if 'admin_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
 
+    admin_id = session['admin_id']
+    admin = Admin.query.get(admin_id)
     num_users = User.query.count()
     num_movies = Movie.query.count()
 
@@ -205,12 +260,22 @@ def manage_users():
     return render_template('manage_users.html',
                            num_users=num_users,
                            num_movies=num_movies,
-                           users=users)
+                           users=users,
+                           admin=admin)
 
 
 @admin_bp.route('/add_movie', methods=['GET', 'POST'])
 def add_movie():
     if 'admin_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
 
     admin = get_current_admin()  # Fetch the current admin from session
@@ -248,12 +313,18 @@ def add_movie():
                 db.session.add(director)
                 db.session.commit()
 
+            # Handle rating conversion with error handling
+            try:
+                rating = float(movie_data.get('imdbRating', 0))
+            except ValueError:
+                rating = 0  # Default to 0 if conversion fails
+
             # Create the movie object with the director's ID
             new_movie = Movie(
                 title=movie_title,
                 director_id=director.id,
                 year=movie_data.get('Year') or None,
-                rating=float(movie_data.get('imdbRating', 0)) if movie_data.get('imdbRating') else 0,
+                rating=rating,
                 # Handle 'Poster' field, using default if it's 'N/A' or missing
                 poster=movie_data.get('Poster')
                 if movie_data.get('Poster') and movie_data.get('Poster') != 'N/A'
@@ -297,6 +368,15 @@ def add_movie():
 @admin_bp.route('/edit_movie/<int:movie_id>', methods=['GET', 'POST'])
 def edit_movie(movie_id):
     if 'admin_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
 
     admin = get_current_admin()  # Fetch the current admin from session
@@ -352,18 +432,43 @@ def edit_movie(movie_id):
 @admin_bp.route('/delete_movie/<int:movie_id>', methods=['POST'])
 def delete_movie(movie_id):
     if 'admin_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
+
+    admin_id = session['admin_id']
+    admin = Admin.query.get(admin_id)
 
     movie = Movie.query.get_or_404(movie_id)
     db.session.delete(movie)
     db.session.commit()
-    return redirect(url_for('admin_bp.manage_movies'))
+    flash('Movie deleted successfully!', 'success')
+    return redirect(url_for('admin_bp.manage_movies', admin=admin))
 
 
 @admin_bp.route('/manage_movies')
 def manage_movies():
     if 'admin_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
+
+    admin_id = session['admin_id']
+    admin = Admin.query.get(admin_id)
 
     num_users = User.query.count()
     num_movies = Movie.query.count()
@@ -380,13 +485,26 @@ def manage_movies():
     return render_template('manage_movies.html',
                            num_users=num_users,
                            num_movies=num_movies,
-                           movies=movies)
+                           movies=movies,
+                           admin=admin)
 
 
 @admin_bp.route('/reports')
 def reports():
     if 'admin_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions['cache']
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
         return redirect(url_for('login'))
+
+    admin_id = session['admin_id']
+    admin = Admin.query.get(admin_id)
 
     num_users = User.query.count()
     num_movies = Movie.query.count()
@@ -415,4 +533,5 @@ def reports():
     return render_template('reports.html',
                            num_users=num_users,
                            num_movies=num_movies,
-                           users_with_movies=users_with_movies)
+                           users_with_movies=users_with_movies,
+                           admin=admin)

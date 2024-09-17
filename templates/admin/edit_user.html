@@ -19,13 +19,28 @@
         {% include 'partials/admin_header.html' %}
     </header>
 
-     <!-- Menu -->
+    <!-- Menu -->
     <nav id="menu">
         {% include 'partials/admin_menu.html' %}
     </nav>
 
     <!-- Main -->
     <div id="main">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
+                <span>{{ message }}</span>
+                {% if category in ['danger', 'info'] %}
+                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
         <section id="edit-user">
             <div class="inner">
                 <header class="major">
@@ -78,7 +93,7 @@
         </section>
     </div>
 
-   <!-- Footer -->
+    <!-- Footer -->
     <footer id="footer">
         {% include 'partials/movie_web_app_footer.html' %}
     </footer>
@@ -93,6 +108,7 @@
 <script src="../../static/js/breakpoints.min.js"></script>
 <script src="../../static/js/util.js"></script>
 <script src="../../static/js/main.js"></script>
-
+<script src="../../static/js/pagination.js"></script> <!-- Add this line -->
+<script src="../../static/js/message.js"></script>
 </body>
 </html>

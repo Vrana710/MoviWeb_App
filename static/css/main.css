@@ -3951,6 +3951,66 @@ input, select, textarea {
 			visibility: visible;
 		}
 
+/*  Message Display styles */
+.flash-messages {
+    margin: 15px;
+}
+
+.alert {
+    display: flex; /* Use flexbox for alignment */
+    justify-content: space-between; /* Space between content and close button */
+    align-items: center; /* Center items vertically */
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    position: relative; /* For absolute positioning of close button */
+    background-color: #fff; /* Default background color */
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+.close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #000;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #888;
+}
+
+.alert-success {
+    animation: fadeOut 5s forwards;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; display: none; }
+}
+
+
+/* Add more styles as needed */
+
 	/*.movie-poster {
     width: 100px;
     height: auto;

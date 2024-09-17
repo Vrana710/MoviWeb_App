@@ -20,18 +20,35 @@
     </header>
 
     <!-- Menu -->
-   <nav id="menu">
+    <nav id="menu">
         {% include 'partials/user_menu.html' %}
     </nav>
 
     <!-- Main -->
     <div id="main">
-
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
+                <span>{{ message }}</span>
+                {% if category in ['danger', 'info'] %}
+                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
         <!-- Favorites -->
         <section id="favorites">
             <div class="inner">
                 <header class="major">
                     <h2>My Favorites</h2>
+                    <a href="{{ url_for('user_bp.my_movies') }}" class="button">
+                        My Movie List
+                    </a>
                     <label class="button">Total Favorites Movies: {{ num_favorites }}</label>
                 </header>
                 {% include 'partials/user_favorites_content.html' %}
@@ -55,5 +72,7 @@
 <script src="../../static/js/util.js"></script>
 <script src="../../static/js/main.js"></script>
 <script src="../../static/js/pagination.js"></script> <!-- Add this line -->
+<script src="../../static/js/message.js"></script>
+
 </body>
 </html>

@@ -10,7 +10,18 @@
     </noscript>
 </head>
 <body class="is-preload">
-
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=True) %}
+{% if messages %}
+<div class="flash-messages">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
 <!-- Wrapper -->
 <div id="wrapper">
 
@@ -26,6 +37,21 @@
 
     <!-- Main -->
     <div id="main">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
+                <span>{{ message }}</span>
+                {% if category in ['danger', 'info'] %}
+                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
         <section id="reports">
             <div class="inner">
                 <header class="major">
@@ -34,7 +60,7 @@
                 <p>Total Users: {{ num_users }}</p>
                 <p>Total Movies: {{ num_movies }}</p>
                 <p>Movies added by User:</p>
-                 {% include 'partials/user_report_content.html' %}
+                {% include 'partials/user_report_content.html' %}
             </div>
         </section>
     </div>
@@ -54,6 +80,6 @@
 <script src="../../static/js/util.js"></script>
 <script src="../../static/js/main.js"></script>
 <script src="../../static/js/pagination.js"></script> <!-- Add this line -->
-
+<script src="../../static/js/message.js"></script>
 </body>
 </html>
