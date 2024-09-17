@@ -1,0 +1,11 @@
+<ul class="links">
+    <li><a href="{{ url_for('admin_bp.admin_dashboard') }}">Home</a></li>
+    <li><a href="{{ url_for('admin_bp.add_user') }}">Add Users</a></li>
+    <li><a href="{{ url_for('admin_bp.manage_users') }}">Manage Users</a></li>
+    <li><a href="{{ url_for('admin_bp.add_movie') }}">Add Movies</a></li>
+    <li><a href="{{ url_for('admin_bp.manage_movies') }}">Manage Movies</a></li>
+    <li><a href="{{ url_for('admin_bp.reports') }}">Reports</a></li>
+</ul>
+<ul class="actions stacked">
+    <li><a href="{{ url_for('logout') }}" class="button primary fit">Log Out</a></li>
+</ul>

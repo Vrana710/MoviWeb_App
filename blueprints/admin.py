@@ -10,12 +10,12 @@ from flask import (Blueprint,
                    session,
                    flash,
                    current_app)
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
 from models import db, User, Movie, Director, Admin, Genre
 from blueprints.utils import _fetch_movie_data
-
 
 admin_bp = Blueprint('admin_bp', __name__,
                      template_folder=os.path.join(os.path.dirname(__file__),
@@ -26,7 +26,32 @@ admin_bp = Blueprint('admin_bp', __name__,
 def admin_dashboard():
     if 'admin_id' not in session:
         return redirect(url_for('login'))
-    return render_template('admin_dashboard.html')
+
+    num_users = User.query.count()
+    num_movies = Movie.query.count()
+
+    # Set the page number from the request args or default to 1
+    page = request.args.get('page', 1, type=int)
+    per_page = 5  # Set how many users to display per page
+
+    # Paginate the query
+    users_with_movies = (
+        db.session.query(User, func.count(Movie.id).label('movies_count'))
+        .outerjoin(Movie, Movie.user_id == User.id)
+        .group_by(User.id)
+        .paginate(page=page, per_page=per_page)
+    )
+
+    # Check if the request is an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Render only the table and pagination
+        return render_template('partials/users_table.html', users_with_movies=users_with_movies)
+
+    # Render the full page
+    return render_template('admin_dashboard.html',
+                           num_users=num_users,
+                           num_movies=num_movies,
+                           users_with_movies=users_with_movies)
 
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -165,8 +190,22 @@ def manage_users():
     if 'admin_id' not in session:
         return redirect(url_for('login'))
 
-    users = User.query.all()
-    return render_template('manage_users.html', users=users)
+    num_users = User.query.count()
+    num_movies = Movie.query.count()
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 5  # Set how many users to display per page
+
+    users = User.query.paginate(page=page, per_page=per_page)
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Render and return only the table and pagination controls for AJAX requests
+        return render_template('partials/manage_users_content.html', users=users)
+
+    return render_template('manage_users.html',
+                           num_users=num_users,
+                           num_movies=num_movies,
+                           users=users)
 
 
 @admin_bp.route('/add_movie', methods=['GET', 'POST'])
@@ -215,7 +254,11 @@ def add_movie():
                 director_id=director.id,
                 year=movie_data.get('Year') or None,
                 rating=float(movie_data.get('imdbRating', 0)) if movie_data.get('imdbRating') else 0,
-                poster=movie_data.get('Poster') or '',
+                # Handle 'Poster' field, using default if it's 'N/A' or missing
+                poster=movie_data.get('Poster')
+                if movie_data.get('Poster') and movie_data.get('Poster') != 'N/A'
+                else url_for('static', filename='images/default_movie_poster.jpg'),
+
                 imdbID=movie_data.get('imdbID') or '',  # IMDb ID or link
                 plot=movie_data.get('Plot') or '',
                 user_id=request.form.get('user_id') or None,  # Optional: user ID
@@ -223,7 +266,7 @@ def add_movie():
             )
 
             # Handle genres if provided
-            genres = movie_data.getlist('genres')
+            genres = movie_data.get('genre', [])
             for genre_name in genres:
                 genre = Genre.query.filter_by(name=genre_name).first()
                 if not genre:
@@ -322,8 +365,22 @@ def manage_movies():
     if 'admin_id' not in session:
         return redirect(url_for('login'))
 
-    movies = Movie.query.all()
-    return render_template('manage_movies.html', movies=movies)
+    num_users = User.query.count()
+    num_movies = Movie.query.count()
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 5  # Set how many movies to display per page
+
+    movies = Movie.query.paginate(page=page, per_page=per_page)
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Render and return only the table and pagination controls for AJAX requests
+        return render_template('partials/manage_movies_content.html', movies=movies)
+
+    return render_template('manage_movies.html',
+                           num_users=num_users,
+                           num_movies=num_movies,
+                           movies=movies)
 
 
 @admin_bp.route('/reports')
@@ -333,4 +390,29 @@ def reports():
 
     num_users = User.query.count()
     num_movies = Movie.query.count()
-    return render_template('reports.html', num_users=num_users, num_movies=num_movies)
+
+    # Set the page number from the request args or default to 1
+    page = request.args.get('page', 1, type=int)
+    per_page = 5  # Set how many users to display per page
+
+    # Paginate the query
+    users_with_movies = (
+        db.session.query(User, func.count(Movie.id).label('movies_count'))
+        .outerjoin(Movie, Movie.user_id == User.id)
+        .group_by(User.id)
+        .paginate(page=page, per_page=per_page)
+    )
+
+    # Check if the request is an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # Render only the table and pagination
+        return render_template('partials/user_report_content.html',
+                               num_users=num_users,
+                               num_movies=num_movies,
+                               users_with_movies=users_with_movies)
+
+    # Render the full page
+    return render_template('reports.html',
+                           num_users=num_users,
+                           num_movies=num_movies,
+                           users_with_movies=users_with_movies)

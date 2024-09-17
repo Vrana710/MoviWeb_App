@@ -8,7 +8,7 @@
 	<noscript><link rel="stylesheet" href="../static/css/noscript.css" /></noscript>
   <style>
         .movie-poster {
-            width: 100px;
+            width: 180px;
             height: auto;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -35,7 +35,7 @@
 
         <!-- Header -->
         <header id="header" class="alt">
-            <a href="index.html" class="logo"><strong>MoviWeb</strong> <span>Your Movie Tracker</span></a>
+            <a href="{{ url_for('home') }}" class="logo"><strong>MoviWeb</strong> <span>Your Movie Tracker</span></a>
             <nav>
                 <a href="#menu">Menu</a>
             </nav>
@@ -43,17 +43,7 @@
 
         <!-- Menu -->
         <nav id="menu">
-            <ul class="links">
-                <li><a href="{{ url_for('home') }}">Home</a></li>
-                <li><a href="{{ url_for('movies') }}">Movies</a></li>
-                <li><a href="{{ url_for('contact') }}">Contact</a></li>
-                <li><a href="{{ url_for('about') }}">About</a></li>
-            </ul>
-            <ul class="actions stacked">
-                <li><a href="{{ url_for('signup_user') }}" class="button primary fit">Sign Up User</a></li>
-                <li><a href="{{ url_for('signup_admin') }}" class="button primary fit">Sign Up Admin</a></li>
-                <li><a href="{{ url_for('login') }}" class="button fit">Log In</a></li>
-            </ul>
+           {% include 'partials/movie_web_app_menu.html' %}
         </nav>
 
         <!-- Banner -->
@@ -63,7 +53,7 @@
                     <h1>Welcome to MoviWeb</h1>
                 </header>
                 <div class="content">
-                    <p>Your personal movie tracker and favorite movies database.<br />
+                    <p>Your personal movie tracker and favorite movie's database.<br />
                     Discover, track, and manage your movie collection with ease.</p>
                     <ul class="actions">
                         <li><a href="#one" class="button next scrolly">Get Started</a></li>
@@ -79,7 +69,7 @@
             <section id="one" class="tiles">
                 <article>
                     <span class="image">
-                        <img src="images/pic01.jpg" alt="" />
+                        <img src="../static/images/pic01.jpg" alt="" />
                     </span>
                     <header class="major">
                         <h3><a href="{{ url_for('movies') }}" class="link">Latest Releases</a></h3>
@@ -96,7 +86,7 @@
                 </article>
                 <article>
                     <span class="image">
-                        <img src="images/pic03.jpg" alt="" />
+                        <img src="../static/images/pic03.jpg" alt="" />
                     </span>
                     <header class="major">
                         <h3><a href="{{ url_for('about') }}" class="link">About Us</a></h3>
@@ -164,21 +154,10 @@
             </div>
         </section>
 
-        <!-- Footer -->
-		<footer id="footer">
-			<div class="inner">
-				<ul class="icons">
-					<li><a href="https://x.com/?lang=en" class="icon brands alt fa-twitter"><span class="label">Twitter</span></a></li>
-					<li><a href="https://www.facebook.com/" class="icon brands alt fa-facebook-f"><span class="label">Facebook</span></a></li>
-					<li><a href="https://www.instagram.com/" class="icon brands alt fa-instagram"><span class="label">Instagram</span></a></li>
-					<li><a href="https://github.com/Vrana710" class="icon brands alt fa-github"><span class="label">GitHub</span></a></li>
-					<li><a href="https://www.linkedin.com/in/varsha-rana/" class="icon brands alt fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
-				</ul>
-				<ul class="copyright">
-					<li>&copy; 2024</li><li>Design: <a href="https://www.linkedin.com/in/varsha-rana/">By Varsha Rana</a></li>
-				</ul>
-			</div>
-		</footer>
+       <!-- Footer -->
+    <footer id="footer">
+        {% include 'partials/movie_web_app_footer.html' %}
+    </footer>
 
     </div>
 

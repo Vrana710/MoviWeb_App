@@ -14,7 +14,6 @@ from werkzeug.security import generate_password_hash
 from models import db, User, Movie, Director, Favorite, Genre
 from blueprints.utils import _fetch_movie_data
 
-
 user_bp = Blueprint('user_bp', __name__,
                     template_folder=os.path.join(os.path.dirname(__file__),
                                                  '../templates/user'))
@@ -38,14 +37,25 @@ def my_movies():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
+    page = request.args.get('page', 1, type=int)  # Get the current page from query parameters, default to 1
+    per_page = 5  # Number of movies per page
+
     # Query to get all movies
-    all_movies = Movie.query.all()
+    all_movies_query = Movie.query
+
     # Query to get the favorite movies of the user
     favorite_movie_ids = [f.movie_id for f in Favorite.query.filter_by(user_id=user_id).all()]
-    # Filter out favorite movies from the list of all movies
-    movies_to_display = [movie for movie in all_movies if movie.id not in favorite_movie_ids]
 
-    return render_template('my_movies.html', movies=movies_to_display)
+    # Filter out favorite movies from the list of all movies
+    movies_query = all_movies_query.filter(Movie.id.notin_(favorite_movie_ids))
+
+    # Count the total number of movies after filtering
+    num_movies = movies_query.count()
+
+    # Paginate the filtered query
+    movies = movies_query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template('my_movies.html', num_movies=num_movies, movies=movies)
 
 
 @user_bp.route('/user_favorites')
@@ -54,10 +64,22 @@ def user_favorites():
         return redirect(url_for('user_bp.login'))
 
     user_id = session['user_id']
-    # Query to get the favorite movies of the user
-    user_favorite = Movie.query.join(Favorite).filter(Favorite.user_id == user_id, Favorite.movie_id == Movie.id).all()
+    page = request.args.get('page', 1, type=int)  # Get the current page from query parameters, default to 1
+    per_page = 5  # Number of movies per page
 
-    return render_template('user_favorites.html', movies=user_favorite)
+    # Query to get the favorite movies of the user with pagination
+    user_favorites_query = (
+        Movie.query.join(Favorite)
+        .filter(Favorite.user_id == user_id, Favorite.movie_id == Movie.id)
+    )
+
+    # Count the total number of favorite movies
+    num_favorites = user_favorites_query.count()
+
+    # Paginate the query
+    movies = user_favorites_query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template('user_favorites.html', num_favorites=num_favorites, movies=movies)
 
 
 @user_bp.route('/add_to_favorites/<int:movie_id>', methods=['POST'])
@@ -84,7 +106,12 @@ def add_to_favorites(movie_id):
     db.session.commit()
     flash('Movie added to favorites!', 'success')
 
-    return redirect(url_for('user_bp.my_movies'))
+    # Get the updated number of favorite movies
+    num_favorites = Favorite.query.filter_by(user_id=user_id).count()
+
+    # Redirect to the same page after adding to favorites
+    return redirect(
+        url_for('user_bp.user_favorites', page=request.args.get('page', 1, type=int), num_favorites=num_favorites))
 
 
 @user_bp.route('/remove_from_favorites/<int:movie_id>', methods=['POST'])
@@ -110,7 +137,12 @@ def remove_from_favorites(movie_id):
     db.session.commit()
     flash('Movie removed from favorites!', 'success')
 
-    return redirect(url_for('user_bp.my_movies'))
+    # Get the updated number of favorite movies
+    num_favorites = Favorite.query.filter_by(user_id=user_id).count()
+
+    # Redirect to the same page after removing from favorites
+    return redirect(
+        url_for('user_bp.user_favorites', page=request.args.get('page', 1, type=int), num_favorites=num_favorites))
 
 
 @user_bp.route('/user_add_movie', methods=['GET', 'POST'])
@@ -154,7 +186,11 @@ def user_add_movie():
                 director_id=director.id,
                 year=movie_data.get('Year') or None,
                 rating=float(movie_data.get('imdbRating', 0)) if movie_data.get('imdbRating') else 0,
-                poster=movie_data.get('Poster') or '',
+                # Handle 'Poster' field, using default if it's 'N/A' or missing
+                poster=movie_data.get('Poster')
+                if movie_data.get('Poster') and movie_data.get('Poster') != 'N/A'
+                else url_for('static', filename='images/default_movie_poster.jpg'),
+
                 imdbID=movie_data.get('imdbID') or '',  # IMDb ID or link
                 plot=movie_data.get('Plot') or '',
                 admin_id=request.form.get('admin_id') or None,  # Optional: user ID
@@ -162,7 +198,7 @@ def user_add_movie():
             )
 
             # Handle genres if provided
-            genres = movie_data.getlist('genres')
+            genres = movie_data.get('genre', [])
             for genre_name in genres:
                 genre = Genre.query.filter_by(name=genre_name).first()
                 if not genre:
@@ -226,10 +262,10 @@ def edit_user_profile(user_id):
         if new_email and user.email != new_email:
             user.email = new_email
 
-        # Check if password has changed
-        if new_password:
+        # Update the password only if a new password was provided
+        if new_password and new_password.strip():  # Ensure the password is not blank
             user.password = generate_password_hash(new_password)
-            user.password_update_date = datetime.now()  # Update password change timestamp
+            user.password_update_date = datetime.now()  # Optional timestamp for tracking password updates
 
         # Check if gender has changed
         if new_gender and user.gender != new_gender:
