@@ -8,27 +8,6 @@
     <noscript>
         <link rel="stylesheet" href="../static/css/noscript.css"/>
     </noscript>
-    <style>
-        .movie-poster {
-            width: 180px;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .imdb-link {
-            color: #f5c518; /* IMDb yellow */
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 10px;
-            display: inline-block;
-            cursor: pointer; /* Ensures the cursor changes to a pointer when hovering */
-        }
-
-        .imdb-link:hover {
-            text-decoration: underline;
-        }
-    </style>
 </head>
 <body class="is-preload">
 <!-- Wrapper -->
@@ -36,10 +15,7 @@
 
     <!-- Header -->
     <header id="header" class="alt">
-        <a href="{{ url_for('home') }}" class="logo"><strong>MoviWeb</strong> <span>Your Movie Tracker</span></a>
-        <nav>
-            <a href="#menu">Menu</a>
-        </nav>
+       {% include 'partials/movie_web_app_header.html' %}
     </header>
 
     <!-- Menu -->
@@ -50,9 +26,10 @@
     <!-- Banner -->
     <section id="banner" class="major">
         <div class="inner">
-            <header class="major">
-                <h1>Welcome to MoviWeb</h1>
+            <header class="major" >
+                   <h1>Welcome to MoviWeb</h1>
             </header>
+            <img src="../static/images/header_bg.jpg" class="major-image">
             <div class="content">
                 <p>Your personal movie tracker and favorite movie's database.<br/>
                     Discover, track, and manage your movie collection with ease.</p>
@@ -91,14 +68,7 @@
                     <p>Check out the latest movies</p>
                 </header>
             </article>
-            <article>
-                {% for movie in movies %}
-                <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
-                    <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
-                         title="{{ movie.title }}">
-                </a>
-                {% endfor %}
-            </article>
+
             <article>
                     <span class="image">
                         <img src="../static/images/pic03.jpg" alt=""/>
@@ -123,7 +93,28 @@
                 </ul>
             </div>
         </section>
-
+        <!-- Movie Poster -->
+        <section id="three">
+            <div id="movie-poster-wrapper">
+                <div id="movie-poster">
+                    {% for movie in movies %}
+                    <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
+                        <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
+                             title="{{ movie.title }}">
+                        <p>{{ movie.title }}<br>{{ movie.year }}</p>
+                    </a>
+                    {% endfor %}
+                    <!-- Duplicate the content to create a seamless effect -->
+                    {% for movie in movies %}
+                    <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
+                        <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
+                             title="{{ movie.title }}">
+                        <p>{{ movie.title }}<br>{{ movie.year }}</p>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- Contact -->

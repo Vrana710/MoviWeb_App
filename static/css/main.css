@@ -1807,6 +1807,19 @@ input, select, textarea {
 			max-width: 100% !important;
 		}
 
+		.major-image {
+            display: block; /* Ensure the image is treated as a block-level element */
+            max-width: 100%; /* Ensure the image does not exceed the width of its container */
+            height: auto; /* Maintain aspect ratio */
+            object-fit: cover; /* Cover the area without distorting the image */
+            margin: 0 0 2em auto; /* 0 0 2em 0;Center the image horizontally */
+            border-radius: 8px; /* Optional: add rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Optional: add shadow for better visibility */
+            width: 100%; /* Ensure the image scales with the container width */
+            max-height: 80vh; /* Limit height to 80% of the viewport height for responsiveness */
+            object-position: center; /* Center the image within its container */
+        }
+
 	@media screen and (max-width: 736px) {
 
 		header.major > p br {
@@ -3150,7 +3163,19 @@ input, select, textarea {
 				line-height: 1.65em;
 				margin-right: 0.325em;
 				padding: 0 0.125em 0 0.375em;
+
 			}
+
+			/* Styles for the logo image */
+            .logo-image {
+                display: inline-block;
+                margin-right: 0.325em; /* Space between text and image */
+                height: 70px; /* Adjust as needed */
+                width: 50px; /* Adjust as needed */
+                object-fit: contain; /* Ensure the image fits within the specified dimensions */
+                vertical-align: middle; /* Vertically align the image with text */
+            }
+
 
 			#header .logo:hover strong {
 				background-color: #9bf1ff;
@@ -3567,6 +3592,9 @@ input, select, textarea {
 					min-height: 0;
 					max-height: none;
 				}
+				.major-image {
+                    max-height: 60vh; /* Reduce the max-height on smaller screens */
+                }
 
 		}
 
@@ -3583,6 +3611,9 @@ input, select, textarea {
 				#banner.major {
 					padding: 8em 0 4em 0 ;
 				}
+				.major-image {
+                    max-height: 50vh; /* Further reduce the max-height on very small screens */
+                }
 
 		}
 
@@ -4008,25 +4039,51 @@ input, select, textarea {
     100% { opacity: 0; display: none; }
 }
 
+ #movie-poster-wrapper {
+            overflow: hidden; /* Hide overflow to avoid scrollbar */
+            position: relative;
+            width: 100%; /* Full width of the container */
+        }
 
-/* Add more styles as needed */
+        #movie-poster {
+            display: flex;
+            padding: 20px;
+            align-items: center;
+            width: 200%; /* Twice the width to accommodate the duplicated content */
+            animation: scroll 20s linear infinite;
+        }
 
-	/*.movie-poster {
-    width: 100px;
-    height: auto;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-.imdb-link {
-    color: #f5c518; *//* IMDb yellow *//*
-    text-decoration: none;
-    font-weight: bold;
-    margin-top: 10px;
-    display: inline-block;
-    cursor: pointer; *//* Ensures the cursor changes to a pointer when hovering *//*
-}
+        .imdb-link {
+            display: inline-block;
+            margin-right: 20px; /* Space between images */
+            position: relative;
+            cursor: pointer; /* Change cursor to hand when hovering over the link */
+        }
 
-.imdb-link:hover {
-    text-decoration: underline;
-}
-*/
+        .movie-poster {
+            width: 180px;
+            height: 250px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .movie-poster:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .imdb-link:hover {
+            text-decoration: underline;
+        }
+        /* Animation for scrolling effect */
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } /* Adjust to half of the container width */
+        }
+
+        #movie-poster {
+            animation: scroll 60s linear infinite; /* Adjust the duration as needed */
+        }
+
