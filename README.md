@@ -132,7 +132,9 @@ The application uses the "Forty" template by HTML5 UP.
 
 ## Demo
 
-Watch the demo video of the MoviWeb App [here](https://github.com/Vrana710/MoviWeb_App/blob/main/assets/video/Screen_Recording_2024-09-15_at_21.56.09.mov).
+Watch the demo video of the MoviWeb App [here](https://github.com/Vrana710/MoviWeb_App/blob/main/assets/video/Demo.mp4).
+Watch the demo video ![Demo](./assets/video/Demo.mp4)
+
 
 Note: Due to file size limitations, the video may need to be downloaded to view it properly.
 
