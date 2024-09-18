@@ -133,10 +133,10 @@ The application uses the "Forty" template by HTML5 UP.
 ## Demo
 
 Watch the demo video of the MoviWeb App [here](https://github.com/Vrana710/MoviWeb_App/blob/main/assets/video/Demo.mp4).
-Watch the demo video ![Demo](./assets/video/Demo.mp4)
 
+Alternatively, you can view the video directly in the browser [here](https://github.com/Vrana710/MoviWeb_App/issues/1#issuecomment-2358206129).
 
-Note: Due to file size limitations, the video may need to be downloaded to view it properly.
+Note: If you are not able to see the video, you may need to download it to view it properly.
 
 ## Contributing
 
