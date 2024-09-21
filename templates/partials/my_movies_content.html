@@ -8,6 +8,7 @@
             <th>Director</th>
             <th>Year</th>
             <th>Rating</th>
+            <th>Genre</th>
             <th>Actions</th>
         </tr>
         </thead>
@@ -21,10 +22,26 @@
             <td>{{ movie.year }}</td>
             <td>{{ movie.rating }}</td>
             <td>
+                {% for genre in movie.genres %}
+                {{ genre.name }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td>
                 <form action="{{ url_for('user_bp.add_to_favorites', movie_id=movie.id) }}" method="post"
                       style="display:inline;">
                     <button type="submit" class="button">Add to Favorites</button>
                 </form>
+                <a href="{{ url_for('user_bp.user_edit_movie', movie_id=movie.id) }}"
+                   class="button">Edit</a>
+                <form action="{{ url_for('user_bp.delete_movie', movie_id=movie.id) }}" method="post" onsubmit="return confirmDeletion()"
+                      style="display:inline;">
+                    <input type="submit" value="Delete" class="button"/>
+                </form>
+                <script>
+                    function confirmDeletion() {
+                        return confirm("Are you sure you want to delete this movie?");
+                    }
+                </script>
             </td>
         </tr>
         {% endfor %}

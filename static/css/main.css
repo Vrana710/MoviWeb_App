@@ -4051,6 +4051,7 @@ input, select, textarea {
             align-items: center;
             width: 200%; /* Twice the width to accommodate the duplicated content */
             animation: scroll 20s linear infinite;
+            font-color:#be3a3a;
         }
 
         .imdb-link {
@@ -4061,8 +4062,8 @@ input, select, textarea {
         }
 
         .movie-poster {
-            width: 180px;
-            height: 250px;
+            width: 250px;
+            height: 350px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -4075,7 +4076,7 @@ input, select, textarea {
         }
 
         .imdb-link:hover {
-            text-decoration: underline;
+            text-decoration: none;
         }
         /* Animation for scrolling effect */
         @keyframes scroll {
@@ -4084,6 +4085,25 @@ input, select, textarea {
         }
 
         #movie-poster {
-            animation: scroll 60s linear infinite; /* Adjust the duration as needed */
+            animation: scroll 20s linear infinite; /* Adjust the duration as needed */
         }
 
+        @media print {
+            #menu  #footer, .flash-messages, .button, nav {
+                display: none;
+            }
+        }
+
+        .profile-image {
+            display: flex;
+            justify-content: left; /* Center the image */
+            margin-bottom: 20px; /* Space below the image */
+        }
+
+        .profile-pic {
+            width: 100px; /* Set a width */
+            height: 100px; /* Set a height */
+            border-radius: 50%; /* Makes the image round */
+            object-fit: cover; /* Ensures the image covers the entire area */
+            border: 2px solid #ccc; /* Optional: adds a border */
+        }

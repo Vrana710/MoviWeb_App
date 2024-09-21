@@ -1,4 +1,4 @@
-<!-- templates/partials/user_report_content.html -->
+<!-- templates/partials/all_movies_added_by_user_of_current_admin_content.html -->
 <!-- Container for user table -->
 <div id="admin-report-container">
     <table id="admin-report-table">
@@ -7,6 +7,7 @@
             <th>No.</th>
             <th>User Name</th>
             <th>Movies Count</th>
+             <th>Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -16,6 +17,8 @@
             <td>{{ start_no + loop.index0 }}</td>
             <td>{{ user.name }}</td>
             <td>{{ movies_count }}</td>
+            <td><a href="{{ url_for('admin_bp.details_view_of_movies_added_by_user_of_current_admin_report', user_id=user.id) }}"
+                   class="button">View</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -24,14 +27,14 @@
     <p>Page {{ users_with_movies.page }} of {{ users_with_movies.pages }}</p>
 </div>
 <!-- Pagination controls -->
-<div id="pagination-container-reports">
+<div id="pagination-container-all-movies-added-by-user-of-current-admin-report">
     <nav aria-label="Page navigation">
         <ul class="pagination">
             <!-- Previous page link -->
             {% if users_with_movies.has_prev %}
             <li class="page-item">
                 <a class="page-link"
-                   href="{{ url_for('admin_bp.reports', page=users_with_movies.prev_num) }}">Previous</a>
+                   href="{{ url_for('admin_bp.all_movies_added_by_user_of_current_admin_report', page=users_with_movies.prev_num) }}">Previous</a>
             </li>
             {% else %}
             <li class="page-item disabled">
@@ -43,7 +46,7 @@
             {% for page_num in users_with_movies.iter_pages() %}
             {% if page_num %}
             <li class="page-item {% if page_num == users_with_movies.page %}active{% endif %}">
-                <a class="page-link" href="{{ url_for('admin_bp.reports', page=page_num) }}">{{ page_num }}</a>
+                <a class="page-link" href="{{ url_for('admin_bp.all_movies_added_by_user_of_current_admin_report', page=page_num) }}">{{ page_num }}</a>
             </li>
             {% else %}
             <li class="page-item disabled">
@@ -56,7 +59,7 @@
             {% if users_with_movies.has_next %}
             <li class="page-item">
                 <a class="page-link"
-                   href="{{ url_for('admin_bp.reports', page=users_with_movies.next_num) }}">Next</a>
+                   href="{{ url_for('admin_bp.all_movies_added_by_user_of_current_admin_report', page=users_with_movies.next_num) }}">Next</a>
             </li>
             {% else %}
             <li class="page-item disabled">

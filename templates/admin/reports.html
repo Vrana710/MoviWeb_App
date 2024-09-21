@@ -37,30 +37,32 @@
 
     <!-- Main -->
     <div id="main">
-        <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-        <div class="flash-messages">
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
-                <span>{{ message }}</span>
-                {% if category in ['danger', 'info'] %}
-                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
-                {% endif %}
-            </div>
-            {% endfor %}
+         <!-- Flash messages -->
+        <div class="messages">
+            {% include 'partials/messages.html' %}
         </div>
-        {% endif %}
-        {% endwith %}
         <section id="reports">
             <div class="inner">
                 <header class="major">
                     <h2>Reports</h2>
                 </header>
-                <p>Total Users: {{ num_users }}</p>
-                <p>Total Movies: {{ num_movies }}</p>
-                <p>Movies added by User:</p>
-                {% include 'partials/user_report_content.html' %}
+                <p class="button">
+                    Total Number of Users Added by Current Admin : {{ num_users }}
+                </p>
+                <p class="button">
+                    Total Number of Movies Added by Current Admin : {{ num_movies }}
+                </p>
+                <p class="button">
+                    Total Number of Users Currently using the App : {{ num_users_total }}
+                </p>
+                <p class="button">
+                    Total Number of Movie Currently in the App : {{ num_movies_total }}
+                </p>
+                <p class="button">
+                    <a href="{{ url_for('admin_bp.all_movies_added_by_user_of_current_admin_report') }}">
+                        View All Movies added by user of current admin report
+                    </a>
+                </p>
             </div>
         </section>
     </div>

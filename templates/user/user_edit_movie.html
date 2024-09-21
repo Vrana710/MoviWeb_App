@@ -14,14 +14,14 @@
 <!-- Wrapper -->
 <div id="wrapper">
 
-    <!-- Header -->
+   <!-- Header -->
     <header id="header" class="alt">
-        {% include 'partials/admin_header.html' %}
+        {% include 'partials/user_header.html' %}
     </header>
 
     <!-- Menu -->
     <nav id="menu">
-        {% include 'partials/admin_menu.html' %}
+        {% include 'partials/user_menu.html' %}
     </nav>
 
     <!-- Main -->
@@ -35,7 +35,7 @@
                 <header class="major">
                     <h2>Edit Movie</h2>
                 </header>
-                <form action="{{ url_for('admin_bp.edit_movie', admin_id=admin.id, movie_id=movie.id) }}" method="post">
+                <form action="{{ url_for('user_bp.user_edit_movie', movie_id=movie.id) }}" method="post">
                     <div class="field">
                         <label for="title">Movie Name</label>
                         <input type="text" name="title" id="title" value="{{ movie.title }}" required/>
@@ -58,19 +58,9 @@
                             value="{% for genre in movie.genres %}{{ genre.name }}{% if not loop.last %}, {% endif %}{% endfor %}"
                             placeholder="Enter genres separated by commas (eg. Action, Crime, Drama)" />
                     </div>
-                    <div class="field">
-                        <label for="user_id">Assign to User (optional)</label>
-                        <select name="user_id" id="user_id">
-                            <option value="">None</option>
-                            {% for user in users %}
-                            <option value="{{ user.id }}" {% if user.id== movie.user_id %}selected{% endif %}>
-                                {{ user.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
                     <ul class="actions">
                         <li><input type="submit" value="Save Changes" class="primary"/></li>
+                        <li><a href="{{ url_for('user_bp.my_movies', user_id=user.id) }}" class="button">Cancel</a></li>
                     </ul>
                 </form>
             </div>

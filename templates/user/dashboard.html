@@ -8,27 +8,6 @@
     <noscript>
         <link rel="stylesheet" href="../../static/css/noscript.css"/>
     </noscript>
-    <style>
-        .movie-poster {
-            width: 180px;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .imdb-link {
-            color: #f5c518; /* IMDb yellow */
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 10px;
-            display: inline-block;
-            cursor: pointer; /* Ensures the cursor changes to a pointer when hovering */
-        }
-
-        .imdb-link:hover {
-            text-decoration: underline;
-        }
-    </style>
 </head>
 <body class="is-preload">
 <!-- Wrapper -->
@@ -49,7 +28,7 @@
             <header class="major">
                 <h1>Welcome Back, {{ user.name }}</h1>
             </header>
-            <img src="../static/images/header_bg.jpg" class="major-image">
+            <img src="../static/images/header_bg.jpg" class="major">
             <div class="content">
                 <p>Your personal movie tracker and favorite movies database.<br/>
                     Discover new releases and manage your collection with ease.</p>
@@ -63,43 +42,30 @@
     <!-- Main -->
     <div id="main">
         <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-        <div class="flash-messages">
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
-                <span>{{ message }}</span>
-                {% if category in ['danger', 'info'] %}
-                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
-                {% endif %}
-            </div>
-            {% endfor %}
+        <div class="messages">
+            {% include 'partials/messages.html' %}
         </div>
-        {% endif %}
-        {% endwith %}
+
         <!-- Latest Movies -->
         <section id="latest-movies" class="tiles">
             {% for movie in latest_movies %}
-
-            <article>
-                <header>
-                    <h3>{{ movie.title }}</h3>
+            <article style="background-image: url('{{ movie.poster }}');">
+                <span class="image" style="display: none;">
+                    <img src="{{ movie.poster }}" alt="{{ movie.title }} poster">
+                </span>
+                <header class="major">
+                    <h3><a href="https://www.imdb.com/title/{{ movie.imdbID }}" class="link" target="_blank">{{
+                        movie.title }}</a></h3>
+                    <p>
+                        Year: {{ movie.year }} | Rating: {{ movie.rating }}
+                    </p>
                 </header>
                 <div class="content">
-                    <p>
-                        <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
-                            <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
-                                 title="{{ movie.title }}">
-                        </a>
-                        <br/>
-                        Year: {{ movie.year }} Rating: {{ movie.rating }}
-                    </p>
+                    <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="link primary"></a>
                 </div>
             </article>
-
             {% endfor %}
         </section>
-
         <!-- User Statistics -->
         <section id="stats">
             <div class="inner">
@@ -108,10 +74,46 @@
                 </header>
                 <p>Track your movie-watching statistics and trends.</p>
                 <!-- Include some statistics and data here -->
-                <label class="button">Total Favorites Movies: {{ num_favorites }}</label>
+                <a href="{{ url_for('user_bp.user_favorites') }}"  class="button">
+                        No. of Favorites Movies: {{ num_favorites }}
+                </a>
+                <a href="{{ url_for('user_bp.my_movies') }}"  class="button">
+                    No. of Added Movies: {{ num_movies }}
+                </a>
             </div>
         </section>
+        <!-- Movie Poster -->
+        <section id="three">
+            <div class="inner">
+                <header class="major">
+                    <h2> Your Favorite Movies</h2>
+                </header>
+                <div id="movie-poster-wrapper">
+                    <div id="movie-poster">
 
+                        <!-- Display unique movies -->
+                        {% for movie in movies %}
+                        <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
+                            <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
+                                 title="{{ movie.title }}">
+                            <p>{{ movie.title }}<br>{{ movie.year }}</p>
+                        </a>
+                        {% endfor %}
+
+                        <!-- Duplicate the content to create a seamless effect, only if there are 10 or more movies -->
+                        {% if movies|length >= 10 %}
+                        {% for movie in movies %}
+                        <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
+                            <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
+                                 title="{{ movie.title }}">
+                            <p>{{ movie.title }}<br>{{ movie.year }}</p>
+                        </a>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- Footer -->

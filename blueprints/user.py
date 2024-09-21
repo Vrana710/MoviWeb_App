@@ -34,22 +34,43 @@ def user_dashboard():
         return redirect(url_for('login'))  # Redirect to login page if not authenticated
 
     user_id = session['user_id']
-    user = User.query.get(user_id)
-    latest_movies = Movie.query.order_by(Movie.id.desc()).limit(5).all()  # Latest movies
+    user = User.query.get_or_404(user_id)  # Ensure user exists or raise 404
 
-    # Query to get the favorite movies of the user with pagination
+    # Fetch the latest movies added by the current user (limit to 5 for display purposes)
+    latest_movies = (
+        Movie.query.filter_by(user_id=user_id)
+        .order_by(Movie.id.desc())
+        .limit(5)
+        .all()
+    )
+
+    # Query to get the favorite movies of the user
     user_favorites_query = (
         Movie.query.join(Favorite)
-        .filter(Favorite.user_id == user_id, Favorite.movie_id == Movie.id)
+        .filter(Favorite.user_id == user_id,
+                Favorite.movie_id == Movie.id)
     )
 
     # Count the total number of favorite movies
     num_favorites = user_favorites_query.count()
+    num_movies = Movie.query.filter_by(user_id=user_id).count()
+
+    movies = user_favorites_query.filter_by(user_id=user_id)
+    seen_imdb_ids = set()
+    unique_movies = []
+
+    for movie in movies:
+        if movie.imdbID not in seen_imdb_ids:
+            seen_imdb_ids.add(movie.imdbID)
+            unique_movies.append(movie)
 
     return render_template('dashboard.html',
                            user=user,
                            latest_movies=latest_movies,
-                           num_favorites=num_favorites)
+                           num_favorites=num_favorites,
+                           movies=unique_movies,
+                           num_movies=num_movies
+                           )
 
 
 @user_bp.route('/my_movies')
@@ -70,14 +91,11 @@ def my_movies():
     page = request.args.get('page', 1, type=int)  # Get the current page from query parameters, default to 1
     per_page = 5  # Number of movies per page
 
-    # Query to get all movies
-    all_movies_query = Movie.query
-
     # Query to get the favorite movies of the user
     favorite_movie_ids = [f.movie_id for f in Favorite.query.filter_by(user_id=user_id).all()]
 
-    # Filter out favorite movies from the list of all movies
-    movies_query = all_movies_query.filter(Movie.id.notin_(favorite_movie_ids))
+    # Query to get all movies added by the current user, excluding the user's favorite movies
+    movies_query = Movie.query.filter(Movie.user_id == user_id).filter(Movie.id.notin_(favorite_movie_ids))
 
     # Count the total number of movies after filtering
     num_movies = movies_query.count()
@@ -206,14 +224,9 @@ def remove_from_favorites(movie_id):
 def user_add_movie():
     if 'user_id' not in session:
         session.clear()
-
-        # Access cache through current_app
-        current_cache = current_app.extensions['cache']
-
-        # Clear cache if it exists
+        current_cache = current_app.extensions.get('cache')
         if current_cache and hasattr(current_cache, 'clear'):
             current_cache.clear()
-
         return redirect(url_for('login'))
 
     if request.method == 'POST':
@@ -223,6 +236,12 @@ def user_add_movie():
         if not movie_title:
             flash('Title is required to fetch movie details.', 'error')
             return redirect(url_for('user_bp.user_add_movie'))
+
+        # Check if the movie already exists for the current admin
+        existing_movie = Movie.query.filter_by(title=movie_title, user_id=user_id).first()
+        if existing_movie:
+            flash('Movie with this title already exists.', 'warning')
+            return redirect(url_for('admin_bp.manage_movies'))
 
         # Fetch movie data from an external source (API or other service)
         movie_data = _fetch_movie_data(movie_title)
@@ -258,26 +277,29 @@ def user_add_movie():
                 director_id=director.id,
                 year=movie_data.get('Year') or None,
                 rating=rating,
-                # Handle 'Poster' field, using default if it's 'N/A' or missing
                 poster=movie_data.get('Poster')
                 if movie_data.get('Poster') and movie_data.get('Poster') != 'N/A'
                 else url_for('static', filename='images/default_movie_poster.jpg'),
-
                 imdbID=movie_data.get('imdbID') or '',  # IMDb ID or link
                 plot=movie_data.get('Plot') or '',
-                admin_id=request.form.get('admin_id') or None,  # Optional: user ID
-                user_id=user_id  # The user who is adding the movie
+                user_id=user_id,  # The user who is adding the movie
+                admin_id=request.form.get('admin_id') or None  # Optional: admin ID
             )
 
             # Handle genres if provided
-            genres = movie_data.get('genre', [])
-            for genre_name in genres:
+            genre_string = movie_data.get('Genre', '')
+            genre_names = [name.strip() for name in genre_string.split(',') if name.strip()]
+
+            existing_genres = {genre.id for genre in new_movie.genres}  # Get existing genre IDs for the movie
+            for genre_name in genre_names:
                 genre = Genre.query.filter_by(name=genre_name).first()
                 if not genre:
                     genre = Genre(name=genre_name)
                     db.session.add(genre)
                     db.session.commit()
-                new_movie.genres.append(genre)
+                if genre.id not in existing_genres:
+                    new_movie.genres.append(genre)
+                    existing_genres.add(genre.id)  # Update the existing genre IDs set
 
             try:
                 db.session.add(new_movie)
@@ -296,6 +318,118 @@ def user_add_movie():
     genres = Genre.query.all()
 
     return render_template('user_add_movie.html', genres=genres)
+
+
+@user_bp.route('/edit_movie/<int:movie_id>', methods=['GET', 'POST'])
+def user_edit_movie(movie_id):
+    if 'user_id' not in session:
+        session.clear()
+        current_cache = current_app.extensions.get('cache')
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']  # Fetch the current user from session
+
+    if not user_id:
+        flash('You must be logged in to edit a movie.', 'warning')
+        return redirect(url_for('user_bp.login'))
+
+    movie = Movie.query.get_or_404(movie_id)
+
+    # Ensure that only the user who added the movie can edit it
+    if movie.user_id != user_id:
+        flash('You are not authorized to edit this movie.', 'warning')
+        return redirect(url_for('user_bp.my_movies'))
+
+    if request.method == 'POST':
+        movie.title = request.form.get('title')
+        director_name = request.form.get('director')
+
+        # Find or create the director
+        director = Director.query.filter_by(name=director_name).first()
+        if not director:
+            director = Director(name=director_name)
+            db.session.add(director)
+            db.session.commit()
+
+        movie.director_id = director.id
+        movie.year = int(request.form.get('year', movie.year))
+        movie.rating = float(request.form.get('rating', movie.rating))
+
+        # Handle genres if provided
+        genre_string = request.form.get('genres', '')
+        # Set of genre names from input
+        genre_names = {name.strip() for name in genre_string.split(',') if name.strip()}
+
+        current_genres = {genre.name: genre for genre in movie.genres}  # Map of current genre names to Genre objects
+        existing_genre_names = set(current_genres.keys())  # Set of current genre names
+
+        genres_to_add = genre_names - existing_genre_names  # New genres not already associated with the movie
+        genres_to_remove = existing_genre_names - genre_names  # Genres to remove
+
+        # Add new genres
+        for genre_name in genres_to_add:
+            genre = Genre.query.filter_by(name=genre_name).first()
+            if not genre:
+                genre = Genre(name=genre_name)
+                db.session.add(genre)
+                db.session.commit()
+            movie.genres.append(genre)
+
+        # Remove genres that are no longer associated with the movie
+        for genre_name in genres_to_remove:
+            genre_to_remove = current_genres[genre_name]
+            movie.genres.remove(genre_to_remove)
+
+        try:
+            db.session.commit()
+            flash('Movie updated successfully!', 'success')
+            return redirect(url_for('user_bp.my_movies'))
+        except IntegrityError as e:
+            db.session.rollback()  # Rollback in case of error
+            flash(f"Database error: {str(e)}", 'error')
+            return redirect(url_for('user_bp.user_edit_movie', movie_id=movie_id))
+
+    genres = Genre.query.all()  # To display available genres
+
+    return render_template('user_edit_movie.html', movie=movie, genres=genres, user=user_id)
+
+
+@user_bp.route('/delete_movie/<int:movie_id>', methods=['POST'])
+def delete_movie(movie_id):
+    if 'user_id' not in session:
+        session.clear()
+
+        # Access cache through current_app
+        current_cache = current_app.extensions.get('cache')
+
+        # Clear cache if it exists
+        if current_cache and hasattr(current_cache, 'clear'):
+            current_cache.clear()
+
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+
+    # Get the movie and check if it belongs to the current user
+    movie = Movie.query.filter_by(id=movie_id, user_id=user_id).first_or_404()
+
+    # Delete the movie if it belongs to the current admin
+    try:
+        # Remove associations from the movie_genre association table
+        movie.genres.clear()
+
+        # Now delete the movie
+        db.session.delete(movie)
+        db.session.commit()
+        flash('Movie deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()  # Rollback on error
+        flash(f'Error deleting movie: {str(e)}', 'danger')
+
+    return redirect(url_for('user_bp.my_movies', user=user))
 
 
 @user_bp.route('/user_profile')

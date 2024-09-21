@@ -59,16 +59,19 @@ The application will be available at `http://127.0.0.1:5000`.
 
 ## Routes
 
-### User Routes
+### Home Routes
 
 - **Home (`/`)**: Displays the home page.
 - **About (`/about`)**: Displays information about the application.
-- **Favorites (`/favorites`)**: Shows a list of favorite movies.
 - **Movies (`/movies`)**: Lists available movies.
 - **Contact (`/contact`)**: Provides a form for users to send messages.
 - **Signup User (`/signup_user`)**: User registration form.
 - **Login (`/login`)**: Login page for both users and admins.
 - **Logout (`/logout`)**: Logs out the current user or admin.
+
+
+### User Routes
+
 - **Dashboard (`/dashboard`)**: Displays the user dashboard with latest movies.
 - **My Movies (`/my_movies`)**: Lists movies that are not in the user's favorites.
 - **User Favorites (`/user_favorites`)**: Lists favorite movies of the user.

@@ -25,31 +25,51 @@
 
     <!-- Main -->
     <div id="main">
-        <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-        <div class="flash-messages">
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
-                <span>{{ message }}</span>
-                {% if category in ['danger', 'info'] %}
-                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
-                {% endif %}
-            </div>
-            {% endfor %}
+         <!-- Flash messages -->
+        <div class="messages">
+            {% include 'partials/messages.html' %}
         </div>
-        {% endif %}
-        {% endwith %}
         <section id="movies">
             <div class="inner">
                 <header class="major">
-                    <h2>Movies</h2>
+                    <h2>Movie Collection List</h2>
                 </header>
                 <p>Explore the latest movies and manage your collection.</p>
                 <!-- Main -->
-                <label class="button">Total Movies: {{ num_movies }}</label>
+                <label class="button">Total No. of Movies: {{ num_movies }}</label>
                 <!-- movies_home.html -->
                 {% include 'partials/movie_web_app_collection.html'%}
+            </div>
+        </section>
+        <!-- Movie Poster -->
+        <section id="three">
+            <div class="inner">
+                <header class="major">
+                    <h2> Movie Posters</h2>
+                </header>
+                <div id="movie-poster-wrapper">
+                    <div id="movie-poster">
+                        <!-- Display unique movies -->
+                        {% for movie in movies %}
+                        <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
+                            <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
+                                 title="{{ movie.title }}">
+                            <p>{{ movie.title }}<br>{{ movie.year }}</p>
+                        </a>
+                        {% endfor %}
+
+                        <!-- Duplicate the content to create a seamless effect, only if there are 10 or more movies -->
+                        {% if movies|length >= 10 %}
+                        {% for movie in movies %}
+                        <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
+                            <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
+                                 title="{{ movie.title }}">
+                            <p>{{ movie.title }}<br>{{ movie.year }}</p>
+                        </a>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </section>
     </div>

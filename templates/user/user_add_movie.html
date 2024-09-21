@@ -26,33 +26,25 @@
     <!-- Main -->
     <div id="main">
         <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-        <div class="flash-messages">
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
-                <span>{{ message }}</span>
-                {% if category in ['danger', 'info'] %}
-                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
-                {% endif %}
-            </div>
-            {% endfor %}
+        <div class="messages">
+            {% include 'partials/messages.html' %}
         </div>
-        {% endif %}
-        {% endwith %}
         <!-- Add Movie -->
         <section id="add-movie">
             <div class="inner">
                 <header class="major">
                     <h2>Add New Movie</h2>
                 </header>
-                <form action="{{ url_for('user_bp.user_add_movie') }}" method="POST">
+                <form action="{{ url_for('user_bp.user_add_movie') }}" method="post">
                     <div class="field">
                         <label for="title">Title</label>
                         <input type="text" id="title" name="title" required/>
+                        <br>
                     </div>
-                    <div class="actions">
-                        <button type="submit" class="button primary">Add Movie</button>
+                    <div>
+                        <ul class="actions">
+                            <li><input type="submit" value="Add Movie" class="primary"/></li>
+                        </ul>
                     </div>
                 </form>
             </div>

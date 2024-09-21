@@ -42,14 +42,30 @@ app.register_blueprint(user_bp, url_prefix='/user')
 
 @app.route('/')
 def index():
-    movie = Movie.query.all()
-    return render_template('index.html', movies=movie)
+    movies = Movie.query.all()
+    seen_imdb_ids = set()
+    unique_movies = []
+
+    for movie in movies:
+        if movie.imdbID not in seen_imdb_ids:
+            seen_imdb_ids.add(movie.imdbID)
+            unique_movies.append(movie)
+
+    return render_template('index.html', movies=unique_movies)
 
 
 @app.route('/home')
 def home():
-    movie = Movie.query.all()
-    return render_template('index.html', movies=movie)
+    movies = Movie.query.all()
+    seen_imdb_ids = set()
+    unique_movies = []
+
+    for movie in movies:
+        if movie.imdbID not in seen_imdb_ids:
+            seen_imdb_ids.add(movie.imdbID)
+            unique_movies.append(movie)
+
+    return render_template('index.html', movies=unique_movies)
 
 
 @app.route('/about')
@@ -90,20 +106,36 @@ def movies_home():
 
     # Use left outer joins for Director and Genre relationships
     movies_query = Movie.query \
+        .distinct() \
         .outerjoin(Movie.director) \
         .outerjoin(Movie.genres) \
         .order_by(sort) \
-        .paginate(page=page, per_page=per_page)
+        .all()  # Fetch all movies without pagination first to filter duplicates
 
-    # Get total number of movies
-    num_movies = movies_query.total
+    # Logic to filter out duplicate movies by imdbID
+    seen_imdb_ids = set()
+    unique_movies = []
+
+    for movie in movies_query:
+        if movie.imdbID not in seen_imdb_ids:
+            seen_imdb_ids.add(movie.imdbID)
+            unique_movies.append(movie)
+
+    # Paginate the filtered unique movies list manually
+    total_unique_movies = len(unique_movies)
+    start_index = (page - 1) * per_page
+    end_index = start_index + per_page
+    paginated_movies = unique_movies[start_index:end_index]
 
     # Pass movies and sorting information to the template
     return render_template('movies_home.html',
-                           num_movies=num_movies,
-                           movies=movies_query,
+                           num_movies=total_unique_movies,  # Use total number of unique movies
+                           movies=paginated_movies,  # Pass the paginated unique movies
                            sort_column=sort_column,
-                           sort_order=sort_order)
+                           sort_order=sort_order,
+                           page=page,
+                           per_page=per_page,
+                           movies_query=unique_movies)
 
 
 @app.route('/contact', methods=['GET', 'POST'])
@@ -137,6 +169,14 @@ def signup_user():
         email = request.form['email']
         password = request.form['password']
         gender = request.form.get('gender')  # Optional field
+
+        if not email:
+            flash('E-mail is required to create a user.', 'error')
+            return redirect(url_for('signup_user'))
+
+        if User.query.filter_by(email=email).first():
+            flash('User is already exists with this E-mail Id. Please use a different email.', 'error')
+            return redirect(url_for('signup_user'))
 
         # Handle password hashing
         hashed_password = generate_password_hash(password)
@@ -178,6 +218,15 @@ def signup_admin():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
+
+        if not email:
+            flash('E-mail is required to create a user.', 'error')
+            return redirect(url_for('signup_admin'))
+
+        if Admin.query.filter_by(email=email).first():
+            flash('Admin is already exists with this E-mail Id. Please use a different email.', 'error')
+            return redirect(url_for('signup_admin'))
+
         hashed_password = generate_password_hash(password)
 
         new_admin = Admin(name=name, email=email, password=hashed_password)

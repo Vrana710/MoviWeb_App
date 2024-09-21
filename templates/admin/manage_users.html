@@ -25,25 +25,15 @@
 
     <!-- Main -->
     <div id="main">
-        <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-        <div class="flash-messages">
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
-                <span>{{ message }}</span>
-                {% if category in ['danger', 'info'] %}
-                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
-                {% endif %}
-            </div>
-            {% endfor %}
+         <!-- Flash messages -->
+        <div class="messages">
+            {% include 'partials/messages.html' %}
         </div>
-        {% endif %}
-        {% endwith %}
         <section id="users">
             <div class="inner">
                 <header class="major">
-                    <h2>Manage Users</h2>
+                    <h2>Manage Users added by {{ admin.name }} </h2>
+                    <a href="{{ url_for('admin_bp.manage_all_users') }}" class="button">Manage All Users</a>
                     <a href="{{ url_for('admin_bp.add_user') }}" class="button">Add User</a>
                     <label class="button">Total Users: {{ num_users }}</label>
                 </header>

@@ -30,7 +30,7 @@
             <header class="major">
                 <h1>Welcome, {{ admin.name }}</h1>
             </header>
-            <img src="../static/images/header_bg.jpg" class="major-image">
+            <img src="../static/images/header_bg.jpg" class="major">
             <div class="content">
                 <p>Manage users, movies, and view reports.<br/>
                     Keep your MoviWeb application running smoothly.</p>
@@ -45,29 +45,62 @@
     <!-- Main -->
     <div id="main">
         <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-        <div class="flash-messages">
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
-                <span>{{ message }}</span>
-                {% if category in ['danger', 'info'] %}
-                <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
-                {% endif %}
-            </div>
-            {% endfor %}
+        <div class="messages">
+            {% include 'partials/messages.html' %}
         </div>
-        {% endif %}
-        {% endwith %}
         <section id="dashboard_reports">
             <div class="inner">
                 <header class="major">
                     <h2>Reports</h2>
                 </header>
-                <p>Total Users: {{ num_users }}</p>
-                <p>Total Movies: {{ num_movies }}</p>
-                <p>Movies added by User:</p>
-                {% include 'partials/users_table.html' %}
+                <p class="button">
+                    Total Number of Users Added by Current Admin : {{ num_users }}
+                </p>
+                <p class="button">
+                    Total Number of Movies Added by Current Admin : {{ num_movies }}
+                </p>
+                <p class="button">
+                    Total Number of Users Currently using the App : {{ num_users_total }}
+                </p>
+                <p class="button">
+                    Total Number of Movie Currently in the App : {{ num_movies_total }}
+                </p>
+                <p class="button">
+                    <a href="{{ url_for('admin_bp.all_movies_added_by_user_of_current_admin_report') }}">
+                        View All Movies added by user of current admin report
+                    </a>
+                </p>
+            </div>
+        </section>
+        <!-- Movie Poster -->
+        <section id="three">
+            <div class="inner">
+                <header class="major">
+                    <h2> Movies added by you</h2>
+                </header>
+                <div id="movie-poster-wrapper">
+                    <div id="movie-poster">
+                        <!-- Display unique movies -->
+                        {% for movie in movies %}
+                        <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
+                            <img src="{{ movie.poster }}" alt="{{ movie.title }}" class="movie-poster"
+                                 title="{{ movie.title }}">
+                            <p>{{ movie.title }}<br>{{ movie.year }}</p>
+                        </a>
+                        {% endfor %}
+
+                        <!-- Duplicate the content to create a seamless effect, only if there are 10 or more movies -->
+                        {% if movies|length >= 10 %}
+                        {% for movie in movies %}
+                        <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="link">
+                            <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
+                                 title="{{ movie.title }}">
+                            <p>{{ movie.title }}<br>{{ movie.year }}</p>
+                        </a>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </section>
     </div>

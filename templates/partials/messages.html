@@ -1,0 +1,15 @@
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=True) %}
+{% if messages %}
+<div class="flash-messages">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}" id="flash-{{ loop.index }}">
+        <span>{{ message }}</span>
+        {% if category in ['danger', 'info', 'warning', 'error'] %}
+        <button class="close" onclick="this.parentElement.style.display='none';">&times</button>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}

@@ -30,15 +30,14 @@
         <div class="messages">
             {% include 'partials/messages.html' %}
         </div>
-        <section id="movies">
+        <section id="all-movies">
             <div class="inner">
                 <header class="major">
-                    <h2>Manage Movies added by {{ admin.name }}</h2>
-                    <a href="{{ url_for('admin_bp.manage_all_movies') }}" class="button">Manage All Movies</a>
-                    <a href="{{ url_for('admin_bp.add_movie') }}" class="button">Add Movie</a>
-                    <label class="button">Total Movies: {{ num_movies }}</label>
+                    <h2>Manage All Movies</h2>
+                    <label class="button">Total Movies: {{ total_num_movies }}</label>
+                    <a href="{{ url_for('admin_bp.manage_movies') }}" class="button">Back</a>
                 </header>
-                {% include 'partials/manage_movies_content.html' %}
+                {% include 'partials/manage_all_movies_content.html' %}
             </div>
         </section>
     </div>
