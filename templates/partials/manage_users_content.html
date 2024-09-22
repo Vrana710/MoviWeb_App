@@ -17,7 +17,7 @@
             <td>{{ user.name }}</td>
             <td>{{ user.email }}</td>
             <td>
-                <a href="{{ url_for('admin_bp.edit_user', user_id=user.id) }}" class="button">Edit</a>
+                <a href="{{ url_for('admin_bp.view_user', user_id=user.id) }}" class="button">View</a>
                 <form action="{{ url_for('admin_bp.delete_user', user_id=user.id) }}" method="post" onsubmit="return confirmDeletion()"
                       style="display:inline;">
                     <input type="submit" value="Delete" class="button"/>

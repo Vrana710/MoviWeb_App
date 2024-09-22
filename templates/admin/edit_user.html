@@ -26,7 +26,7 @@
 
     <!-- Main -->
     <div id="main">
-         <!-- Flash messages -->
+        <!-- Flash messages -->
         <div class="messages">
             {% include 'partials/messages.html' %}
         </div>
@@ -47,7 +47,9 @@
                         <img src="{{ url_for('static', filename='images/default_profile.png') }}"
                              alt="Default Profile Picture" class="profile-pic"/>
                         {% endif %}
+                    </div>
 
+                    <div class="field">
                         <label for="profile_picture">Change Profile Picture:</label>
                         <input type="file" id="profile_picture" name="profile_picture"/>
                     </div>
@@ -63,20 +65,27 @@
                         <input type="email" id="email" name="email" value="{{ user.email }}" required/>
                     </div>
                     <div class="field">
-                        <label for="password">Password</label>
-                        <input type="password" name="password" id="password" value="{{ user.password }}" required/>
+                        <label for="password">New Password (Leave blank to keep current):</label>
+                        <input type="password" name="password" id="password" placeholder="Enter new password"/>
                     </div>
                     <div class="field">
                         <label for="gender">Gender:</label>
                         <select id="gender" name="gender">
-                            <option value="" {% if not user.gender %}selected{% endif %}>Not Specified</option>
+                            <option value=" " {% if not user.gender %}selected{% endif %}>Not Specified</option>
                             <option value="Male" {% if user.gender=='Male' %}selected{% endif %}>Male</option>
                             <option value="Female" {% if user.gender=='Female' %}selected{% endif %}>Female</option>
+                            <option value="Non-binary" {% if user.gender=='Non-binary' %}selected{% endif %}>Non-binary</option>
                             <option value="Other" {% if user.gender=='Other' %}selected{% endif %}>Other</option>
+                            <option value="Prefer not to say" {% if user.gender=='Prefer-not-to-say' %}selected{% endif %}>Prefer not to say</option>
                         </select>
                     </div>
-                    <!-- Submit Button -->
-                    <button type="submit" class="button primary">Save Changes</button>
+                    <div>
+                        <ul class="actions">
+                            <li><input type="submit" value="Save Changes" class="primary"/></li>
+                            <li><a href="{{ url_for('admin_bp.view_user', user_id=user.id) }}" class="button">Cancel</a>
+                            </li>
+                        </ul>
+                    </div>
                 </form>
             </div>
         </section>

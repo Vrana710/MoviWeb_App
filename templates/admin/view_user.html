@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>Reports - MoviWeb</title>
+    <title>View User - MoviWeb</title>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
     <link rel="stylesheet" href="../../static/css/main.css"/>
@@ -10,18 +10,7 @@
     </noscript>
 </head>
 <body class="is-preload">
-<!-- Flash messages -->
-{% with messages = get_flashed_messages(with_categories=True) %}
-{% if messages %}
-<div class="flash-messages">
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-{% endwith %}
+
 <!-- Wrapper -->
 <div id="wrapper">
 
@@ -41,31 +30,39 @@
         <div class="messages">
             {% include 'partials/messages.html' %}
         </div>
-        <section id="reports">
+        <!-- User Profile -->
+        <section id="user-profile">
             <div class="inner">
                 <header class="major">
-                    <h2>Reports</h2>
+                    <h2>Profile</h2>
                 </header>
-                <p class="button">
-                    Total Number of Users Added by Current Admin : {{ num_users }}
-                </p>
-                <p class="button">
-                    Total Number of Movies Added by Current Admin : {{ num_movies }}
-                </p>
-                <p class="button">
-                    Total Number of Users Currently using the App : {{ num_users_total }}
-                </p>
-                <p class="button">
-                    Total Number of Movie Currently in the App : {{ num_movies_total }}
-                </p>
-                <p>
-                    <a href="{{ url_for('admin_bp.all_movies_added_by_user_of_current_admin_report') }}" class="button">
-                        View All Movies added by user of current admin report
-                    </a>
-                </p>
+
+                <!-- Profile Picture -->
+                <div class="profile-image">
+                    {% if user.profile_picture %}
+                    <img src="{{ url_for('static', filename='images/upload/profile_image/' ~ user.profile_picture) }}"
+                         alt="Profile Picture" class="profile-pic"/>
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/default_profile.png') }}"
+                         alt="Default Profile Picture" class="profile-pic"/>
+                    {% endif %}
+                </div>
+
+                <!-- User Info -->
+                <p><strong>Name:</strong> {{ user.name }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Gender:</strong> {{ user.gender or 'Not Specified' }}</p>
+                <p><strong>Join Date:</strong> {{ user.join_date.strftime('%Y-%m-%d') }}</p>
+
+                <!-- Edit Profile Button -->
+                <a href="{{ url_for('admin_bp.edit_user', user_id=user.id) }}" class="button primary">Edit
+                    Profile</a>
+                <a href="{{ url_for('admin_bp.manage_users') }}" class="button">Back</a>
             </div>
         </section>
+
     </div>
+
     <!-- Footer -->
     <footer id="footer">
         {% include 'partials/movie_web_app_footer.html' %}
@@ -81,7 +78,6 @@
 <script src="../../static/js/breakpoints.min.js"></script>
 <script src="../../static/js/util.js"></script>
 <script src="../../static/js/main.js"></script>
-<script src="../../static/js/pagination.js"></script> <!-- Add this line -->
 <script src="../../static/js/message.js"></script>
 </body>
 </html>

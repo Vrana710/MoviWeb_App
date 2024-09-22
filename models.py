@@ -26,10 +26,28 @@ class User(db.Model):
     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'), nullable=True)
 
     def set_password(self, password):
+        """
+        Set the password for the user and update the password change timestamp.
+
+        Parameters:
+        password (str): The new password to be set. It should be a string of at least 8 characters.
+
+        Returns:
+        None
+        """
         self.password = generate_password_hash(password)
         self.password_update_date = datetime.now()  # Update password change timestamp
 
     def check_password(self, password):
+        """
+        Check if the provided password matches the hashed password stored in the User object.
+
+        Parameters:
+        password (str): The password provided by the user.
+
+        Returns:
+        bool: True if the provided password matches the hashed password, False otherwise.
+        """
         return check_password_hash(self.password, password)
 
 
@@ -84,9 +102,27 @@ class Admin(db.Model):
     password = db.Column(db.String(200), nullable=False)
 
     def set_password(self, password):
+        """
+        Set the password for the admin.
+
+        Parameters:
+        password (str): The new password to be set.
+
+        Returns:
+        None
+        """
         self.password = generate_password_hash(password)
 
     def check_password(self, password):
+        """
+        Check if the provided password matches the hashed password stored in the User object.
+
+        Parameters:
+        password (str): The password provided by the user.
+
+        Returns:
+        bool: True if the provided password matches the hashed password, False otherwise.
+        """
         return check_password_hash(self.password, password)
 
 

@@ -65,8 +65,8 @@
                 <p class="button">
                     Total Number of Movie Currently in the App : {{ num_movies_total }}
                 </p>
-                <p class="button">
-                    <a href="{{ url_for('admin_bp.all_movies_added_by_user_of_current_admin_report') }}">
+                <p>
+                    <a href="{{ url_for('admin_bp.all_movies_added_by_user_of_current_admin_report') }}" class="button">
                         View All Movies added by user of current admin report
                     </a>
                 </p>
@@ -81,7 +81,7 @@
                 <div id="movie-poster-wrapper">
                     <div id="movie-poster">
                         <!-- Display unique movies -->
-                        {% for movie in movies %}
+                        {% for movie in unique_movies %}
                         <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="imdb-link">
                             <img src="{{ movie.poster }}" alt="{{ movie.title }}" class="movie-poster"
                                  title="{{ movie.title }}">
@@ -90,8 +90,8 @@
                         {% endfor %}
 
                         <!-- Duplicate the content to create a seamless effect, only if there are 10 or more movies -->
-                        {% if movies|length >= 10 %}
-                        {% for movie in movies %}
+                        {% if unique_movies|length >= 10 %}
+                        {% for movie in unique_movies %}
                         <a href="https://www.imdb.com/title/{{ movie.imdbID }}" target="_blank" class="link">
                             <img src="{{ movie.poster }}" alt="{{ movie.title }} poster" class="movie-poster"
                                  title="{{ movie.title }}">

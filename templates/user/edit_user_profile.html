@@ -49,7 +49,9 @@
                         <img src="{{ url_for('static', filename='images/default_profile.png') }}"
                              alt="Default Profile Picture" class="profile-pic"/>
                         {% endif %}
+                    </div>
 
+                    <div class="field">
                         <label for="profile_picture">Change Profile Picture:</label>
                         <input type="file" id="profile_picture" name="profile_picture"/>
                     </div>
@@ -71,10 +73,12 @@
                     <div class="field">
                         <label for="gender">Gender:</label>
                         <select id="gender" name="gender">
-                            <option value="" {% if not user.gender %}selected{% endif %}>Not Specified</option>
+                            <option value=" " {% if not user.gender %}selected{% endif %}>Not Specified</option>
                             <option value="Male" {% if user.gender=='Male' %}selected{% endif %}>Male</option>
                             <option value="Female" {% if user.gender=='Female' %}selected{% endif %}>Female</option>
+                            <option value="Non-binary" {% if user.gender=='Non-binary' %}selected{% endif %}>Non-binary</option>
                             <option value="Other" {% if user.gender=='Other' %}selected{% endif %}>Other</option>
+                            <option value="Prefer not to say" {% if user.gender=='Prefer-not-to-say' %}selected{% endif %}>Prefer not to say</option>
                         </select>
                     </div>
                     <!-- Submit Button -->

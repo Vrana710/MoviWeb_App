@@ -1,3 +1,18 @@
+"""
+user.py
+
+This module handles user-related routes and functionalities for the MoviWeb application.
+It includes operations such as adding, editing, and deleting movies, as well as user authentication
+and session management. The routes defined in this module ensure that users can manage their
+favorite movies while enforcing access control and data validation.
+
+Routes:
+- user_add_movie: Allows users to add a new movie.
+- user_edit_movie: Enables users to edit their existing movies.
+- delete_movie: Handles the deletion of a user's movie.
+- Other user-related functionalities as needed.
+"""
+
 import os
 from datetime import datetime
 from flask import (Blueprint,
@@ -5,14 +20,18 @@ from flask import (Blueprint,
                    request,
                    redirect,
                    url_for,
-                   session,
                    flash,
                    current_app)
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError, OperationalError
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
-from models import db, User, Movie, Director, Favorite, Genre
-from blueprints.utils import _fetch_movie_data
+from models import db, User, Movie, Favorite, Genre
+from blueprints.common_fun import (user_logged_in,
+                                   handle_invalid_user,
+                                   handle_not_logged_in,
+                                   allowed_file,
+                                   handle_post_request,
+                                   handle_movie_update)
 
 user_bp = Blueprint('user_bp', __name__,
                     template_folder=os.path.join(os.path.dirname(__file__),
@@ -21,24 +40,30 @@ user_bp = Blueprint('user_bp', __name__,
 
 @user_bp.route('/dashboard')
 def user_dashboard():
-    if 'user_id' not in session:
-        session.clear()
+    """
+    Display the user's dashboard with their profile information, 
+    latest movies added,
+    favorite movies, and a count of their movies.
+    Parameters:
+    None
+    Returns:
+    render_template: A rendered HTML template with 
+    the user's information, latest movies,
+    favorite movies, and a count of their movies.
+    """
+    if not user_logged_in():
+        return handle_not_logged_in()  # Handle case where user is not logged in
 
-        # Access cache through current_app
-        current_cache = current_app.extensions['cache']
+    user = user_logged_in()
 
-        # Clear cache if it exists
-        if current_cache and hasattr(current_cache, 'clear'):
-            current_cache.clear()
+    if user is None:
+        return handle_invalid_user()
 
-        return redirect(url_for('login'))  # Redirect to login page if not authenticated
-
-    user_id = session['user_id']
-    user = User.query.get_or_404(user_id)  # Ensure user exists or raise 404
+    user = User.query.get_or_404(user.id)  # Ensure user exists or raise 404
 
     # Fetch the latest movies added by the current user (limit to 5 for display purposes)
     latest_movies = (
-        Movie.query.filter_by(user_id=user_id)
+        Movie.query.filter_by(user_id=user.id)
         .order_by(Movie.id.desc())
         .limit(5)
         .all()
@@ -47,15 +72,15 @@ def user_dashboard():
     # Query to get the favorite movies of the user
     user_favorites_query = (
         Movie.query.join(Favorite)
-        .filter(Favorite.user_id == user_id,
+        .filter(Favorite.user_id == user.id,
                 Favorite.movie_id == Movie.id)
     )
 
     # Count the total number of favorite movies
     num_favorites = user_favorites_query.count()
-    num_movies = Movie.query.filter_by(user_id=user_id).count()
+    num_movies = Movie.query.filter_by(user_id=user.id).count()
 
-    movies = user_favorites_query.filter_by(user_id=user_id)
+    movies = user_favorites_query.filter_by(user_id=user.id)
     seen_imdb_ids = set()
     unique_movies = []
 
@@ -75,28 +100,36 @@ def user_dashboard():
 
 @user_bp.route('/my_movies')
 def my_movies():
-    if 'user_id' not in session:
-        session.clear()
+    """
+    Display the list of movies added by the current user, 
+    excluding their favorite movies.
+    Parameters:
+    None
+    Returns:
+    render_template: A rendered HTML template with 
+    the list of movies and pagination details.
+    """
+    if not user_logged_in():
+        return handle_not_logged_in()  # Handle case where user is not logged in
 
-        # Access cache through current_app
-        current_cache = current_app.extensions['cache']
+    user = user_logged_in()
 
-        # Clear cache if it exists
-        if current_cache and hasattr(current_cache, 'clear'):
-            current_cache.clear()
-
-        return redirect(url_for('login'))
-
-    user_id = session['user_id']
-    page = request.args.get('page', 1, type=int)  # Get the current page from query parameters, default to 1
+    if user is None:
+        return handle_invalid_user()
+    # Get the current page from query parameters, default to 1
+    page = request.args.get('page', 1, type=int)
     per_page = 5  # Number of movies per page
 
     # Query to get the favorite movies of the user
-    favorite_movie_ids = [f.movie_id for f in Favorite.query.filter_by(user_id=user_id).all()]
+    favorite_movie_ids = [f.movie_id for f in Favorite.query.filter_by(user_id=user.id).all()]
 
-    # Query to get all movies added by the current user, excluding the user's favorite movies
-    movies_query = Movie.query.filter(Movie.user_id == user_id).filter(Movie.id.notin_(favorite_movie_ids))
-
+    # Query to get all movies added by the current user,
+    # excluding the user's favorite movies
+    movies_query = (
+        Movie.query
+        .filter(Movie.user_id == user.id)
+        .filter(Movie.id.notin_(favorite_movie_ids))
+    )
     # Count the total number of movies after filtering
     num_movies = movies_query.count()
 
@@ -108,26 +141,33 @@ def my_movies():
 
 @user_bp.route('/user_favorites')
 def user_favorites():
-    if 'user_id' not in session:
-        session.clear()
+    """
+    This function handles the user's favorite movies page. 
+    It retrieves the favorite movies of the user
+    from the database and paginates the results.
 
-        # Access cache through current_app
-        current_cache = current_app.extensions['cache']
+    Parameters:
+    None
 
-        # Clear cache if it exists
-        if current_cache and hasattr(current_cache, 'clear'):
-            current_cache.clear()
+    Returns:
+    render_template: A rendered HTML template for 
+    the user's favorite movies page.
+    """
+    if not user_logged_in():
+        return handle_not_logged_in()  # Handle case where user is not logged in
 
-        return redirect(url_for('login'))
+    user = user_logged_in()
 
-    user_id = session['user_id']
-    page = request.args.get('page', 1, type=int)  # Get the current page from query parameters, default to 1
+    if user is None:
+        return handle_invalid_user()
+    # Get the current page from query parameters, default to 1
+    page = request.args.get('page', 1, type=int)
     per_page = 5  # Number of movies per page
 
     # Query to get the favorite movies of the user with pagination
     user_favorites_query = (
         Movie.query.join(Favorite)
-        .filter(Favorite.user_id == user_id, Favorite.movie_id == Movie.id)
+        .filter(Favorite.user_id == user.id, Favorite.movie_id == Movie.id)
     )
 
     # Count the total number of favorite movies
@@ -141,19 +181,25 @@ def user_favorites():
 
 @user_bp.route('/add_to_favorites/<int:movie_id>', methods=['POST'])
 def add_to_favorites(movie_id):
-    if 'user_id' not in session:
-        session.clear()
+    """
+    Adds a movie to the user's favorites.
+    Parameters:
+    movie_id (int): The ID of the movie to be added to favorites.
+    Returns:
+    Redirects to the user's favorites page with 
+    a success message if the movie is successfully added.
+    Redirects to the user's movies page with 
+    an error message if the movie is already in favorites.
+    Redirects to the login page if the user is not logged in.
+    """
+    if not user_logged_in():
+        return handle_not_logged_in()  # Handle case where user is not logged in
 
-        # Access cache through current_app
-        current_cache = current_app.extensions['cache']
+    user = user_logged_in()
 
-        # Clear cache if it exists
-        if current_cache and hasattr(current_cache, 'clear'):
-            current_cache.clear()
+    if user is None:
+        return handle_invalid_user()
 
-        return redirect(url_for('login'))
-
-    user_id = session['user_id']
     movie = Movie.query.get(movie_id)
 
     if not movie:
@@ -161,40 +207,45 @@ def add_to_favorites(movie_id):
         return redirect(url_for('user_bp.my_movies'))
 
     # Check if the movie is already a favorite
-    existing_favorite = Favorite.query.filter_by(user_id=user_id, movie_id=movie_id).first()
+    existing_favorite = Favorite.query.filter_by(user_id=user.id, movie_id=movie_id).first()
     if existing_favorite:
         flash('Movie is already in your favorites.', 'info')
         return redirect(url_for('user_bp.my_movies'))
 
     # Add movie to favorites
-    new_favorite = Favorite(user_id=user_id, movie_id=movie_id)
+    new_favorite = Favorite(user_id=user.id, movie_id=movie_id)
     db.session.add(new_favorite)
     db.session.commit()
     flash('Movie added to favorites!', 'success')
 
     # Get the updated number of favorite movies
-    num_favorites = Favorite.query.filter_by(user_id=user_id).count()
+    num_favorites = Favorite.query.filter_by(user_id=user.id).count()
 
     # Redirect to the same page after adding to favorites
     return redirect(
-        url_for('user_bp.user_favorites', page=request.args.get('page', 1, type=int), num_favorites=num_favorites))
+        url_for('user_bp.user_favorites',
+                page=request.args.get('page', 1, type=int),
+                num_favorites=num_favorites))
 
 
 @user_bp.route('/remove_from_favorites/<int:movie_id>', methods=['POST'])
 def remove_from_favorites(movie_id):
-    if 'user_id' not in session:
-        session.clear()
+    """
+    Remove a movie from the user's favorites.
+    Parameters:
+    movie_id (int): The ID of the movie to be removed.
+    Returns:
+    Redirects to the user's favorite movies page with 
+    a success message or an error message.
+    """
+    if not user_logged_in():
+        return handle_not_logged_in()  # Handle case where user is not logged in
 
-        # Access cache through current_app
-        current_cache = current_app.extensions['cache']
+    user = user_logged_in()
 
-        # Clear cache if it exists
-        if current_cache and hasattr(current_cache, 'clear'):
-            current_cache.clear()
+    if user is None:
+        return handle_invalid_user()
 
-        return redirect(url_for('login'))
-
-    user_id = session['user_id']
     movie = Movie.query.get(movie_id)
 
     if not movie:
@@ -202,7 +253,7 @@ def remove_from_favorites(movie_id):
         return redirect(url_for('user_bp.my_movies'))
 
     # Find the favorite entry
-    favorite = Favorite.query.filter_by(user_id=user_id, movie_id=movie_id).first()
+    favorite = Favorite.query.filter_by(user_id=user.id, movie_id=movie_id).first()
     if not favorite:
         flash('Movie is not in your favorites.', 'info')
         return redirect(url_for('user_bp.my_movies'))
@@ -213,210 +264,87 @@ def remove_from_favorites(movie_id):
     flash('Movie removed from favorites!', 'success')
 
     # Get the updated number of favorite movies
-    num_favorites = Favorite.query.filter_by(user_id=user_id).count()
+    num_favorites = Favorite.query.filter_by(user_id=user.id).count()
 
     # Redirect to the same page after removing from favorites
     return redirect(
-        url_for('user_bp.user_favorites', page=request.args.get('page', 1, type=int), num_favorites=num_favorites))
+        url_for('user_bp.user_favorites',
+                page=request.args.get('page', 1, type=int),
+                num_favorites=num_favorites))
 
 
 @user_bp.route('/user_add_movie', methods=['GET', 'POST'])
 def user_add_movie():
-    if 'user_id' not in session:
-        session.clear()
-        current_cache = current_app.extensions.get('cache')
-        if current_cache and hasattr(current_cache, 'clear'):
-            current_cache.clear()
-        return redirect(url_for('login'))
+    """
+    Handles the addition of a new movie by a user.
+    """
+    if not user_logged_in():
+        return handle_not_logged_in()  # Handle case where user is not logged in
+
+    user = user_logged_in()
+
+    if user is None:
+        return handle_invalid_user()
 
     if request.method == 'POST':
-        user_id = session['user_id']
-        movie_title = request.form.get('title')
-
-        if not movie_title:
-            flash('Title is required to fetch movie details.', 'error')
-            return redirect(url_for('user_bp.user_add_movie'))
-
-        # Check if the movie already exists for the current admin
-        existing_movie = Movie.query.filter_by(title=movie_title, user_id=user_id).first()
-        if existing_movie:
-            flash('Movie with this title already exists.', 'warning')
-            return redirect(url_for('admin_bp.manage_movies'))
-
-        # Fetch movie data from an external source (API or other service)
-        movie_data = _fetch_movie_data(movie_title)
-
-        if movie_data:
-            # Validate the essential fields
-            title = movie_data.get('Title')
-            if not title:
-                flash('Movie title not found in the fetched data.', 'error')
-                return redirect(url_for('user_bp.user_add_movie'))
-
-            director_name = movie_data.get('Director')
-            if not director_name:
-                flash('Director not found in the fetched data.', 'error')
-                return redirect(url_for('user_bp.user_add_movie'))
-
-            # Find or create the director
-            director = Director.query.filter_by(name=director_name).first()
-            if not director:
-                director = Director(name=director_name)
-                db.session.add(director)
-                db.session.commit()
-
-            # Handle rating conversion with error handling
-            try:
-                rating = float(movie_data.get('imdbRating', 0))
-            except ValueError:
-                rating = 0  # Default to 0 if conversion fails
-
-            # Create the movie object with the director's ID
-            new_movie = Movie(
-                title=title,
-                director_id=director.id,
-                year=movie_data.get('Year') or None,
-                rating=rating,
-                poster=movie_data.get('Poster')
-                if movie_data.get('Poster') and movie_data.get('Poster') != 'N/A'
-                else url_for('static', filename='images/default_movie_poster.jpg'),
-                imdbID=movie_data.get('imdbID') or '',  # IMDb ID or link
-                plot=movie_data.get('Plot') or '',
-                user_id=user_id,  # The user who is adding the movie
-                admin_id=request.form.get('admin_id') or None  # Optional: admin ID
-            )
-
-            # Handle genres if provided
-            genre_string = movie_data.get('Genre', '')
-            genre_names = [name.strip() for name in genre_string.split(',') if name.strip()]
-
-            existing_genres = {genre.id for genre in new_movie.genres}  # Get existing genre IDs for the movie
-            for genre_name in genre_names:
-                genre = Genre.query.filter_by(name=genre_name).first()
-                if not genre:
-                    genre = Genre(name=genre_name)
-                    db.session.add(genre)
-                    db.session.commit()
-                if genre.id not in existing_genres:
-                    new_movie.genres.append(genre)
-                    existing_genres.add(genre.id)  # Update the existing genre IDs set
-
-            try:
-                db.session.add(new_movie)
-                db.session.commit()
-                flash('Movie added successfully!', 'success')
-                return redirect(url_for('user_bp.my_movies'))
-            except IntegrityError as e:
-                db.session.rollback()  # Rollback in case of error
-                flash(f"Database error: {str(e)}", 'error')
-                return redirect(url_for('user_bp.user_add_movie'))
-        else:
-            flash('Movie not found in the API.', 'error')
-            return redirect(url_for('user_bp.user_add_movie'))
+        return handle_post_request()
 
     # For GET request, prepare the list of genres
     genres = Genre.query.all()
-
     return render_template('user_add_movie.html', genres=genres)
 
 
 @user_bp.route('/edit_movie/<int:movie_id>', methods=['GET', 'POST'])
 def user_edit_movie(movie_id):
-    if 'user_id' not in session:
-        session.clear()
-        current_cache = current_app.extensions.get('cache')
-        if current_cache and hasattr(current_cache, 'clear'):
-            current_cache.clear()
-        return redirect(url_for('login'))
+    """
+    Handles the editing of a movie by a user.
+    """
+    if not user_logged_in():
+        return handle_not_logged_in()  # Handle case where user is not logged in
 
-    user_id = session['user_id']  # Fetch the current user from session
+    user = user_logged_in()
 
-    if not user_id:
-        flash('You must be logged in to edit a movie.', 'warning')
-        return redirect(url_for('user_bp.login'))
+    if user is None:
+        return handle_invalid_user()
 
     movie = Movie.query.get_or_404(movie_id)
 
-    # Ensure that only the user who added the movie can edit it
-    if movie.user_id != user_id:
+    if movie.user_id != user.id:
         flash('You are not authorized to edit this movie.', 'warning')
         return redirect(url_for('user_bp.my_movies'))
 
     if request.method == 'POST':
-        movie.title = request.form.get('title')
-        director_name = request.form.get('director')
-
-        # Find or create the director
-        director = Director.query.filter_by(name=director_name).first()
-        if not director:
-            director = Director(name=director_name)
-            db.session.add(director)
-            db.session.commit()
-
-        movie.director_id = director.id
-        movie.year = int(request.form.get('year', movie.year))
-        movie.rating = float(request.form.get('rating', movie.rating))
-
-        # Handle genres if provided
-        genre_string = request.form.get('genres', '')
-        # Set of genre names from input
-        genre_names = {name.strip() for name in genre_string.split(',') if name.strip()}
-
-        current_genres = {genre.name: genre for genre in movie.genres}  # Map of current genre names to Genre objects
-        existing_genre_names = set(current_genres.keys())  # Set of current genre names
-
-        genres_to_add = genre_names - existing_genre_names  # New genres not already associated with the movie
-        genres_to_remove = existing_genre_names - genre_names  # Genres to remove
-
-        # Add new genres
-        for genre_name in genres_to_add:
-            genre = Genre.query.filter_by(name=genre_name).first()
-            if not genre:
-                genre = Genre(name=genre_name)
-                db.session.add(genre)
-                db.session.commit()
-            movie.genres.append(genre)
-
-        # Remove genres that are no longer associated with the movie
-        for genre_name in genres_to_remove:
-            genre_to_remove = current_genres[genre_name]
-            movie.genres.remove(genre_to_remove)
-
-        try:
-            db.session.commit()
-            flash('Movie updated successfully!', 'success')
-            return redirect(url_for('user_bp.my_movies'))
-        except IntegrityError as e:
-            db.session.rollback()  # Rollback in case of error
-            flash(f"Database error: {str(e)}", 'error')
-            return redirect(url_for('user_bp.user_edit_movie', movie_id=movie_id))
+        return handle_movie_update(movie)
 
     genres = Genre.query.all()  # To display available genres
-
-    return render_template('user_edit_movie.html', movie=movie, genres=genres, user=user_id)
+    return render_template('user_edit_movie.html', movie=movie, genres=genres, user=user)
 
 
 @user_bp.route('/delete_movie/<int:movie_id>', methods=['POST'])
 def delete_movie(movie_id):
-    if 'user_id' not in session:
-        session.clear()
+    """
+    Deletes a movie from the database.
+    Parameters:
+    movie_id (int): The ID of the movie to be deleted.
+    Returns:
+    - If the movie belongs to the current user,
+      it deletes the movie and redirects to the 'my_movies' page.
+    - If the movie does not belong to the current user,
+      it redirects to the 'my_movies' page with a warning message.
+    - If an error occurs during the deletion process,
+      it rolls back the changes and displays an error message.
+    """
+    if not user_logged_in():
+        return handle_not_logged_in()  # Handle case where user is not logged in
 
-        # Access cache through current_app
-        current_cache = current_app.extensions.get('cache')
+    user = user_logged_in()
 
-        # Clear cache if it exists
-        if current_cache and hasattr(current_cache, 'clear'):
-            current_cache.clear()
-
-        return redirect(url_for('login'))
-
-    user_id = session['user_id']
-    user = User.query.get(user_id)
+    if user is None:
+        return handle_invalid_user()
 
     # Get the movie and check if it belongs to the current user
-    movie = Movie.query.filter_by(id=movie_id, user_id=user_id).first_or_404()
+    movie = Movie.query.filter_by(id=movie_id, user_id=user.id).first_or_404()
 
-    # Delete the movie if it belongs to the current admin
     try:
         # Remove associations from the movie_genre association table
         movie.genres.clear()
@@ -425,53 +353,73 @@ def delete_movie(movie_id):
         db.session.delete(movie)
         db.session.commit()
         flash('Movie deleted successfully!', 'success')
-    except Exception as e:
-        db.session.rollback()  # Rollback on error
-        flash(f'Error deleting movie: {str(e)}', 'danger')
+    except IntegrityError:
+        db.session.rollback()  # Rollback on integrity error
+        flash('Error deleting movie: Integrity error occurred.', 'danger')
+    except OperationalError:
+        db.session.rollback()  # Rollback on operational error
+        flash('Error deleting movie: A database operational error occurred.', 'danger')
+    except SQLAlchemyError:
+        db.session.rollback()  # Rollback on SQLAlchemy-related errors
+        flash('Error deleting movie: A database error occurred.', 'danger')
 
-    return redirect(url_for('user_bp.my_movies', user=user))
+    return redirect(url_for('user_bp.my_movies'))
 
 
 @user_bp.route('/user_profile')
 def user_profile():
-    if 'user_id' not in session:
-        session.clear()
+    """
+    This function handles the user profile page.
+    It checks if the user is logged in, 
+    fetches the user's data from the database,
+    and renders the 'user_profile.html' 
+    template with the user's information.
+    Parameters:
+    None
+    Returns:
+    - If the user is logged in, it returns the 'user_profile.html' template
+      with the user's information.
+    - If the user is not logged in, it redirects to the 'login' page.
+    """
+    if not user_logged_in():
+        return handle_not_logged_in()  # Handle case where user is not logged in
 
-        # Access cache through current_app
-        current_cache = current_app.extensions['cache']
+    user = user_logged_in()
 
-        # Clear cache if it exists
-        if current_cache and hasattr(current_cache, 'clear'):
-            current_cache.clear()
+    if user is None:
+        return handle_invalid_user()  # Handle case where user is not valid
 
-        return redirect(url_for('login'))
+    user_id = User.query.get(user.id)
 
-    user_id = session['user_id']
-    user = User.query.get(user_id)
-
-    return render_template('user_profile.html', user=user)
-
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return render_template('user_profile.html', user=user_id)
 
 
 @user_bp.route('/edit_user_profile/<int:user_id>', methods=['GET', 'POST'])
 def edit_user_profile(user_id):
-    if 'user_id' not in session:
-        session.clear()
+    """
+    This function handles the editing of a user's profile.
+    It checks if the user is logged in, 
+    fetches the user's data from the database,
+    validates the data, and updates the user object.
+    Parameters:
+    user_id (int): The ID of the user whose profile is being edited.
+    Returns:
+    - If the request method is POST, it returns 
+      a redirect to the 'user_profile' page
+      if the user's profile is successfully updated.
+      Otherwise, it returns the 'edit_user_profile.html'
+      template with the user's information.
+    - If the request method is GET, it returns
+      the 'edit_user_profile.html' template
+      with the user's information.
+    """
+    if not user_logged_in():
+        return handle_not_logged_in()  # Handle case where user is not logged in
 
-        # Access cache through current_app
-        current_cache = current_app.extensions['cache']
+    user = user_logged_in()
 
-        # Clear cache if it exists
-        if current_cache and hasattr(current_cache, 'clear'):
-            current_cache.clear()
-
-        return redirect(url_for('login'))
+    if user is None:
+        return handle_invalid_user()  # Handle case where user is not valid
 
     user = User.query.get_or_404(user_id)
 
@@ -490,9 +438,11 @@ def edit_user_profile(user_id):
             user.email = new_email
 
         # Update the password only if a new password was provided
-        if new_password and new_password.strip():  # Ensure the password is not blank
+        # Ensure the password is not blank
+        if new_password and new_password.strip():
             user.password = generate_password_hash(new_password)
-            user.password_update_date = datetime.now()  # Optional timestamp for tracking password updates
+            # Optional timestamp for tracking password updates
+            user.password_update_date = datetime.now()
 
         # Check if gender has changed
         if new_gender and user.gender != new_gender:
