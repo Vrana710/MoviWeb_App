@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title>{{ movie.title }} - MoviWeb</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"/>
+    <noscript>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/noscript.css') }}"/>
+    </noscript>
+    <style>
+        .movie-poster {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.movie-poster-img {
+    max-width: 100%;
+    height: auto;
+}
+
+.movie-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 10px;
+}
+
+    </style>
+</head>
+<body class="is-preload">
+<!-- Wrapper -->
+<div id="wrapper">
+
+    <!-- Header -->
+    <header id="header" class="alt">
+        {% include 'partials/user_header.html' %}
+    </header>
+
+    <!-- Menu -->
+    <nav id="menu">
+        {% include 'partials/user_menu.html' %}
+    </nav>
+
+    <!-- Main -->
+    <div id="main">
+        <!-- Flash messages -->
+        <div class="messages">
+            {% include 'partials/messages.html' %}
+        </div>
+
+        <!-- Movie Details Section -->
+        <section id="movie-details">
+            <div class="inner">
+                <header class="major">
+                    <h2>{{ movie.title }} ({{ movie.year }})</h2>
+                </header>
+
+                <div class="content" style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+                    <!-- Movie Poster -->
+                    <div class="movie-poster">
+                        {% if movie.poster %}
+                        <img src="{{ movie.poster }}" alt="{{ movie.title }} Poster" class="movie-poster-img"/>
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/default_movie_poster.png') }}"
+                             alt="Default Poster" class="movie-poster-img"/>
+                        {% endif %}
+                    </div>
+
+                    <!-- Movie Information -->
+                    <div class="movie-info">
+                        <p><strong>Director:</strong> {{ movie.director.name }}</p>
+                        <p><strong>IMDb Rating:</strong> {{ movie.rating }} / 10</p>
+                        <p><strong>Genres:</strong>
+                            {% for genre in movie.genres %}
+                            {{ genre.name }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
+                        <p><strong>Plot:</strong> {{ movie.plot }}</p>
+                        <!-- Movie Trailer -->
+                        <button id="watch-video-btn">Watch Trailer</button>
+                        <div id="trailer-container" style="display:none;">
+                            <iframe id="trailer-video" width="660" height="315" frameborder="0"
+                                    allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <!-- Back Button -->
+                <div class="actions">
+                    <a href="{{ url_for('user_bp.my_movies') }}" class="button">Back to My Movies</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer id="footer">
+        {% include 'partials/movie_web_app_footer.html' %}
+    </footer>
+
+</div>
+<script>
+   document.getElementById('watch-video-btn').addEventListener('click', function() {
+        const trailerContainer = document.getElementById('trailer-container');
+        const trailerVideo = document.getElementById('trailer-video');
+
+        // Get the trailer URL from your movie data (update this to match your data structure)
+        const trailerUrl = "{{ movie.trailer }}"; // Make sure this is set correctly in your template
+
+        // Update the iframe source and show the container
+        if (trailerUrl) {
+            trailerVideo.src = trailerUrl.replace("watch?v=", "embed/"); // Change to embed URL
+            trailerContainer.style.display = 'block';
+        } else {
+            alert('Trailer not available');
+        }
+    });
+</script>
+<!-- Scripts -->
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}">
+</script>
+<script src="{{ url_for('static', filename='js/jquery.scrolly.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.scrollex.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/browser.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/breakpoints.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/util.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+<script src="{{ url_for('static', filename='js/message.js') }}"></script>
+</body>
+</html>

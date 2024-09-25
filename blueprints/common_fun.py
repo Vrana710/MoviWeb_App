@@ -125,6 +125,7 @@ def create_movie_from_data(movie_data, admin):
         rating=rating,
         poster=get_movie_poster(movie_data),
         imdbID=movie_data.get('imdbID') or '',
+        trailer=movie_data.get('Trailer') or '',  # Include the trailer URL
         plot=movie_data.get('Plot') or '',
         user_id=request.form.get('user_id') or None,
         admin_id=admin.id
@@ -336,6 +337,7 @@ def create_movie_object(movie_data, user_id, director_id, rating):
                 or url_for('static', filename='images/default_movie_poster.jpg')
         ),
         imdbID=movie_data.get('imdbID') or '',
+        trailer=movie_data.get('Trailer') or '',  # Include the trailer URL
         plot=movie_data.get('Plot') or '',
         user_id=user_id,
         admin_id=request.form.get('admin_id') or None

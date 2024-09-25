@@ -70,6 +70,7 @@ class Movie(db.Model):
     poster = db.Column(db.String(255))  # Optional field to store movie posters
     plot = db.Column(db.Text)  # Optional field to store the plot
     imdbID = db.Column(db.String(255), nullable=True)  # IMDb ID or link
+    trailer = db.Column(db.String(255), nullable=True)  # New field to store YouTube trailer URL
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))
     director_id = db.Column(db.Integer, db.ForeignKey('director.id'), nullable=False)  # Foreign key to Director
