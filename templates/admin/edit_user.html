@@ -34,6 +34,7 @@
             <div class="inner">
                 <header class="major">
                     <h2>Edit User</h2>
+                    <a href="{{ url_for('admin_bp.manage_users') }}" class="button">Back</a>
                 </header>
                 <!-- Form for Editing Profile -->
                 <form method="POST" action="{{ url_for('admin_bp.edit_user', user_id=user.id) }}"

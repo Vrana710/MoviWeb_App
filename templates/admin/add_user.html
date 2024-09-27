@@ -34,6 +34,7 @@
             <div class="inner">
                 <header class="major">
                     <h2>Add New User</h2>
+                    <a href="{{ url_for('admin_bp.manage_users') }}" class="button">Back</a>
                 </header>
                 <form method="post">
                     <div class="fields">
@@ -67,6 +68,7 @@
                     </div>
                     <ul class="actions">
                         <li><input type="submit" value="Add User" class="primary"/></li>
+                        <li><a href="{{ url_for('admin_bp.manage_users') }}" class="button">Back</a></li>
                     </ul>
                 </form>
             </div>

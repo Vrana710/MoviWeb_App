@@ -357,7 +357,8 @@ def login():
 
     Returns:
     render_template: A Flask function that renders the 'login.html' template for GET requests.
-    redirect: A Flask function that redirects to the 'admin_bp.admin_dashboard' or 'user_bp.user_dashboard' for successful POST requests.
+    redirect: A Flask function that redirects to the 'admin_bp.admin_dashboard' or
+    'user_bp.user_dashboard' for successful POST requests.
     """
     if request.method == 'POST':
         email = request.form['email']
@@ -461,7 +462,7 @@ def logout():
 
 
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found():
     """
     This function handles the 404 Not Found error. It renders a custom 404 error page.
 

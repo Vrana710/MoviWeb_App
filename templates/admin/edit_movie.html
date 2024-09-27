@@ -34,6 +34,7 @@
             <div class="inner">
                 <header class="major">
                     <h2>Edit Movie</h2>
+                    <a href="{{ url_for('admin_bp.manage_movies') }}" class="button">Back</a>
                 </header>
                 <form action="{{ url_for('admin_bp.edit_movie', admin_id=admin.id, movie_id=movie.id) }}" method="post">
                     <div class="field">
@@ -71,6 +72,7 @@
                     </div>
                     <ul class="actions">
                         <li><input type="submit" value="Save Changes" class="primary"/></li>
+                        <li><a href="{{ url_for('admin_bp.manage_movies') }}" class="button">Cancel</a></li>
                     </ul>
                 </form>
             </div>

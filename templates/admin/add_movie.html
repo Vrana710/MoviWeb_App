@@ -34,6 +34,7 @@
             <div class="inner">
                 <header class="major">
                     <h2>Add New Movie</h2>
+                    <a href="{{ url_for('admin_bp.manage_movies') }}" class="button">Back</a>
                 </header>
                 <form action="{{ url_for('admin_bp.add_movie', admin_id=admin.id) }}" method="post">
                     <div class="fields">
