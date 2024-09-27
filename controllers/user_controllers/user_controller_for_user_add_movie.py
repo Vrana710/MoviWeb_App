@@ -5,7 +5,7 @@ from models import Genre
 from controllers.common_fun import (user_logged_in,
                                     handle_invalid_user,
                                     handle_not_logged_in,
-                                    handle_post_request
+                                    handle_post_request_add_movie_by_user
                                     )
 
 
@@ -22,7 +22,7 @@ def user_add_movie():
         return handle_invalid_user()
 
     if request.method == 'POST':
-        return handle_post_request()
+        return handle_post_request_add_movie_by_user()
 
     # For GET request, prepare the list of genres
     genres = Genre.query.all()

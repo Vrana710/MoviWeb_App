@@ -8,11 +8,14 @@ Functions:
 - _fetch_movie_data: Fetches movie data from the OMDb API
   using the provided movie title.
 """
-
+import os
 import requests
+from dotenv import load_dotenv
 
-OMDB_API_KEY = "fd6cbe7a"
-TMDB_API_KEY = "133afb26e03c038b42568392feaad902"
+load_dotenv()
+
+OMDB_API_KEY = os.getenv('OMDB_API_KEY')
+TMDB_API_KEY = os.getenv('TMDB_API_KEY')
 
 
 def _fetch_movie_data(title):
@@ -57,3 +60,18 @@ def _fetch_movie_data(title):
         print(f"Error: {e}")
     return None
 
+
+def fetch_movie_data(title):
+    """
+    Public function to fetch movie data, using the internal _fetch_movie_data function.
+
+    This function is a wrapper that ensures the protected function is accessed
+    properly and only through this public interface.
+
+    Parameters:
+    title (str): The title of the movie to fetch data for.
+
+    Returns:
+    dict: A dictionary containing the movie data and trailer link.
+    """
+    return _fetch_movie_data(title)

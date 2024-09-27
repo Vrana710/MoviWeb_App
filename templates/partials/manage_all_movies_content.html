@@ -31,7 +31,7 @@
             <td>{{ movie.user.name if movie.user else 'None' }}</td>
             <td>
                 <a href="{{ url_for('admin_bp.edit_movie', movie_id=movie.id) }}" class="button">Edit</a>
-                <a href="{{ url_for('admin_bp.view_movie_details', movie_id=movie.id) }}" class="button">
+                <a href="{{ url_for('admin_bp.admin_view_movie_details', movie_id=movie.id) }}" class="button">
                     View Details
                 </a>
                 <form action="{{ url_for('admin_bp.delete_any_movie', movie_id=movie.id) }}" method="post" onsubmit="return confirmDeletion()" style="display:inline;">

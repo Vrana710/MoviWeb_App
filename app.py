@@ -26,7 +26,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(db_directory, "moviwebapp.db")}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.config['SECRET_KEY'] = 'vrana@2024MSchool'
+app.config['SECRET_KEY'] = 'YOUR_SECRET_KEY'
 app.config['CACHE_TYPE'] = 'simple'  # Simple in-memory cache for development
 app.config['UPLOAD_FOLDER'] = './static/images/upload/profile_image'
 

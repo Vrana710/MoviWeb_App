@@ -9,7 +9,7 @@ from controllers.common_fun import (admin_logged_in,
                                     )
 
 
-def view_movie_details(movie_id):
+def admin_view_movie_details(movie_id):
     """
     View details of a specific movie added by the user.
 
@@ -34,4 +34,4 @@ def view_movie_details(movie_id):
         return redirect(url_for('admin_bp.manage_movies'))  # Redirect back to movie list if not found
 
     # Render the movie details page
-    return render_template('view_movie_details.html', movie=movie)
+    return render_template('admin_view_movie_details.html', movie=movie)

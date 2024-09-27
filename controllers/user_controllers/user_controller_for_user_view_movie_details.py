@@ -9,7 +9,7 @@ from controllers.common_fun import (user_logged_in,
                                     )
 
 
-def view_movie_details(movie_id):
+def user_view_movie_details(movie_id):
     """
     View details of a specific movie added by the user.
 
@@ -34,4 +34,4 @@ def view_movie_details(movie_id):
         return redirect(url_for('user_bp.my_movies'))  # Redirect back to movie list if not found
 
     # Render the movie details page
-    return render_template('view_movie_details.html', movie=movie)
+    return render_template('user_view_movie_details.html', movie=movie)

@@ -15,7 +15,7 @@ from flask import (
                    flash,
                    current_app)
 from models import db, Movie, Director,  Genre, Admin, User
-from blueprints.utils import _fetch_movie_data
+from blueprints.utils import fetch_movie_data
 
 
 def admin_logged_in():
@@ -64,27 +64,6 @@ def handle_invalid_user():
     return redirect(url_for('login'))  # Redirect to login page
 
 
-def handle_add_movie_post(admin):
-    """Handle POST request for adding a movie."""
-    title = request.form.get('title')
-    if not title:
-        return handle_missing_title()
-
-    existing_movie = check_existing_movie(title, admin.id)
-    if existing_movie:
-        return handle_existing_movie()
-
-    movie_data = _fetch_movie_data(title)
-    if not movie_data:
-        return handle_missing_movie_data()
-
-    new_movie = create_movie_from_data(movie_data, admin)
-    if not new_movie:
-        return handle_invalid_movie_data()
-
-    return save_new_movie(new_movie)
-
-
 def handle_missing_title():
     """Handle case where title is missing."""
     flash('Title is required to fetch movie details.', 'error')
@@ -93,7 +72,7 @@ def handle_missing_title():
 
 def check_existing_movie(title, admin_id):
     """Check if a movie with the same title already exists for the current admin."""
-    return Movie.query.filter_by(title=title, admin_id=admin_id).first()
+    return Movie.query.filter_by(title=title, admin_id=admin_id).first() is not None
 
 
 def handle_existing_movie():
@@ -110,6 +89,7 @@ def handle_missing_movie_data():
 
 def create_movie_from_data(movie_data, admin):
     """Create a Movie object from the fetched data."""
+
     movie_title = movie_data.get('Title')
     director_name = movie_data.get('Director')
     if not movie_title or not director_name:
@@ -133,6 +113,29 @@ def create_movie_from_data(movie_data, admin):
 
     handle_genres(new_movie, movie_data)
     return new_movie
+
+
+def handle_add_movie_post(admin):
+    """Handle POST request for adding a movie."""
+    admin_id = session['admin_id']
+    title = request.form.get('title')
+
+    if not title:
+        return handle_missing_title()
+
+    if check_existing_movie(title, admin_id):
+        flash('Movie with this title already exists.', 'warning')
+        return redirect(url_for('admin_bp.manage_movies'))
+
+    movie_data = fetch_movie_data(title)
+    if not movie_data:
+        return handle_missing_movie_data()
+
+    new_movie = create_movie_from_data(movie_data, admin)
+    if not new_movie:
+        return handle_invalid_movie_data()
+
+    return save_new_movie(new_movie)
 
 
 def find_or_create_director(director_name):
@@ -261,7 +264,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def handle_post_request():
+def handle_post_request_add_movie_by_user():
     """handel request for the current user."""
     user_id = session['user_id']
     movie_title = request.form.get('title')
@@ -272,9 +275,9 @@ def handle_post_request():
 
     if is_movie_exists(movie_title, user_id):
         flash('Movie with this title already exists.', 'warning')
-        return redirect(url_for('admin_bp.manage_movies'))
+        return redirect(url_for('user_bp.my_movies'))
 
-    movie_data = _fetch_movie_data(movie_title)
+    movie_data = fetch_movie_data(movie_title)
     if not movie_data:
         flash('Movie not found in the API.', 'error')
         return redirect(url_for('user_bp.user_add_movie'))
@@ -290,6 +293,11 @@ def is_movie_exists(movie_title, user_id):
 def process_movie_data(movie_data, user_id):
     """Process the fetched movie data and add it to the database."""
     title = movie_data.get('Title')
+
+    if is_movie_exists(title, user_id):
+        flash('Movie with this title already exists.', 'warning')
+        return redirect(url_for('user_bp.user_add_movie'))
+
     if not title:
         flash('Movie title not found in the fetched data.', 'error')
         return redirect(url_for('user_bp.user_add_movie'))

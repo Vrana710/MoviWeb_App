@@ -29,7 +29,7 @@ from controllers.admin_controllers.admin_controller_for_all_movies_added_by_user
 )
 from controllers.admin_controllers.admin_controller_for_details_view_of_movies_added_by_user_of_current_admin_report \
     import details_view_of_movies_added_by_user_of_current_admin_report
-from controllers.admin_controllers.admin_controller_for_view_movie_detail import view_movie_details
+from controllers.admin_controllers.admin_controller_for_admin_view_movie_detail import admin_view_movie_details
 
 
 admin_bp = Blueprint('admin_bp', __name__,
@@ -55,7 +55,7 @@ admin_bp.route('/delete_any_movie/<int:movie_id>', methods=['POST'])(delete_any_
 
 admin_bp.route('/manage_movies')(manage_movies)
 admin_bp.route('/manage_all_movies')(manage_all_movies)
-admin_bp.route('/movie/<int:movie_id>', methods=['GET'])(view_movie_details)
+admin_bp.route('/movie/<int:movie_id>', methods=['GET'])(admin_view_movie_details)
 
 admin_bp.route('/reports')(reports)
 admin_bp.route('/all_movies_added_by_user_of_current_admin_report')(all_movies_added_by_user_of_current_admin_report)

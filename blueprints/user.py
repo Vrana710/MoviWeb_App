@@ -22,7 +22,7 @@ from controllers.user_controllers.user_controller_for_add_movie_to_favorites imp
 from controllers.user_controllers.user_controller_for_remove_movie_from_favorites import (
     remove_from_favorites
 )
-from controllers.user_controllers.user_controller_for_view_movie_details import view_movie_details
+from controllers.user_controllers.user_controller_for_user_view_movie_details import user_view_movie_details
 from controllers.user_controllers.user_controller_for_user_add_movie import user_add_movie
 from controllers.user_controllers.user_controller_for_user_delete_movie import delete_movie
 from controllers.user_controllers.user_controller_for_user_edit_movie import user_edit_movie
@@ -36,7 +36,7 @@ user_bp = Blueprint('user_bp', __name__,
 
 user_bp.route('/dashboard')(user_dashboard)
 user_bp.route('/my_movies')(my_movies)
-user_bp.route('/movie/<int:movie_id>', methods=['GET'])(view_movie_details)
+user_bp.route('/movie/<int:movie_id>', methods=['GET'])(user_view_movie_details)
 user_bp.route('/user_favorites')(user_favorites)
 user_bp.route('/add_to_favorites/<int:movie_id>', methods=['POST'])(add_to_favorites)
 user_bp.route('/remove_from_favorites/<int:movie_id>', methods=['POST'])(remove_from_favorites)
