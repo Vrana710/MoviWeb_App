@@ -66,20 +66,6 @@ The `admin.py` module defines the routes and functionalities for the admin secti
 
 The `user.py` module handles user-related routes and functionalities for the MoviWeb application. It includes operations such as adding, editing, and deleting movies, as well as user authentication and session management. The routes defined in this module ensure that users can manage their favorite movies while enforcing access control and data validation.
 
-### Routes:
-
-- **`/user_add_movie`**: Allows users to add a new movie.
-- **`/edit_movie/<int:movie_id>`**: Enables users to edit their existing movies.
-- **`/delete_movie/<int:movie_id>`**: Handles the deletion of a user's movie.
-- **`/dashboard`**: Displays the user dashboard with the latest movies.
-- **`/my_movies`**: Lists movies that are not in the user's favorites.
-- **`/movie/<int:movie_id>`**: Displays details of a specific movie.
-- **`/user_favorites`**: Lists favorite movies of the user.
-- **`/add_to_favorites/<int:movie_id>`**: Adds a movie to the user's favorites.
-- **`/remove_from_favorites/<int:movie_id>`**: Removes a movie from the user's favorites.
-- **`/user_profile`**: Displays user profile information.
-- **`/edit_user_profile/<int:user_id>`**: Allows users to edit their profile information.
-
 ## Routes
 
 ### Home Routes
@@ -89,6 +75,7 @@ The `user.py` module handles user-related routes and functionalities for the Mov
 - **Movies (`/movies`)**: Lists available movies.
 - **Contact (`/contact`)**: Provides a form for users to send messages.
 - **Signup User (`/signup_user`)**: User registration form.
+- **Signup Admin (`/signup_admin`)**: Admin registration form.
 - **Login (`/login`)**: Login page for both users and admins.
 - **Logout (`/logout`)**: Logs out the current user or admin.
 
