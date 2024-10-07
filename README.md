@@ -58,6 +58,10 @@ flask run
 
 The application will be available at `http://127.0.0.1:5000`.
 
+## Admin Module
+
+The `admin.py` module defines the routes and functionalities for the admin section of the MoviWeb application. It encompasses operations for managing users, movies, and viewing reports. This module ensures that only authenticated admins can access and modify the data, enforcing role-based access control. The routes allow for adding, editing, and deleting users and movies, while also providing insights through various reports on user and movie statistics.
+
 ## User Module
 
 The `user.py` module handles user-related routes and functionalities for the MoviWeb application. It includes operations such as adding, editing, and deleting movies, as well as user authentication and session management. The routes defined in this module ensure that users can manage their favorite movies while enforcing access control and data validation.
