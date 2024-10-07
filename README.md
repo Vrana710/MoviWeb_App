@@ -10,6 +10,7 @@ MoviWeb App is a Flask-based web application for managing user and admin account
 - **Contact Form**: Allows users to send messages to support.
 - **Movie Management**: Admins can add, edit, delete, and manage movies.
 - **Favorites Management**: Users can manage their favorite movies.
+- **Movie Data Fetching**: Fetches movie data from OMDb API and trailers from TMDb API.
 
 ## Installation
 
@@ -57,6 +58,24 @@ flask run
 
 The application will be available at `http://127.0.0.1:5000`.
 
+## User Module
+
+The `user.py` module handles user-related routes and functionalities for the MoviWeb application. It includes operations such as adding, editing, and deleting movies, as well as user authentication and session management. The routes defined in this module ensure that users can manage their favorite movies while enforcing access control and data validation.
+
+### Routes:
+
+- **`/user_add_movie`**: Allows users to add a new movie.
+- **`/edit_movie/<int:movie_id>`**: Enables users to edit their existing movies.
+- **`/delete_movie/<int:movie_id>`**: Handles the deletion of a user's movie.
+- **`/dashboard`**: Displays the user dashboard with the latest movies.
+- **`/my_movies`**: Lists movies that are not in the user's favorites.
+- **`/movie/<int:movie_id>`**: Displays details of a specific movie.
+- **`/user_favorites`**: Lists favorite movies of the user.
+- **`/add_to_favorites/<int:movie_id>`**: Adds a movie to the user's favorites.
+- **`/remove_from_favorites/<int:movie_id>`**: Removes a movie from the user's favorites.
+- **`/user_profile`**: Displays user profile information.
+- **`/edit_user_profile/<int:user_id>`**: Allows users to edit their profile information.
+
 ## Routes
 
 ### Home Routes
@@ -69,7 +88,6 @@ The application will be available at `http://127.0.0.1:5000`.
 - **Login (`/login`)**: Login page for both users and admins.
 - **Logout (`/logout`)**: Logs out the current user or admin.
 
-
 ### User Routes
 
 - **Dashboard (`/dashboard`)**: Displays the user dashboard with latest movies.
@@ -78,7 +96,10 @@ The application will be available at `http://127.0.0.1:5000`.
 - **Add to Favorites (`/add_to_favorites/<int:movie_id>`)**: Adds a movie to the user's favorites.
 - **Remove from Favorites (`/remove_from_favorites/<int:movie_id>`)**: Removes a movie from the user's favorites.
 - **Add Movie (`/user_add_movie`)**: Form to add a new movie (for users).
+- **Edit Movie (`/edit_movie/<int:movie_id>`)**: Enables users to edit their existing movies.
+- **Delete Movie (`/delete_movie/<int:movie_id>`)**: Handles the deletion of a user's movie.
 - **User Profile (`/user_profile`)**: Displays user profile information.
+- **Edit User Profile (`/edit_user_profile/<int:user_id>`)**: Allows users to edit their profile information.
 
 ### Admin Routes
 
@@ -86,12 +107,18 @@ The application will be available at `http://127.0.0.1:5000`.
 - **Add User (`/add_user`)**: Form to register a new user.
 - **Edit User (`/edit_user/<int:user_id>`)**: Form to edit user details.
 - **Delete User (`/delete_user/<int:user_id>`)**: Deletes a user.
+- **View User (`/view_user/<int:user_id>`)**: Displays details of a specific user.
 - **Manage Users (`/manage_users`)**: Lists all users.
+- **Manage All Users (`/manage_all_users`)**: Displays a comprehensive list of all users.
 - **Add Movie (`/add_movie`)**: Form to add a new movie.
 - **Edit Movie (`/edit_movie/<int:movie_id>`)**: Form to edit movie details.
 - **Delete Movie (`/delete_movie/<int:movie_id>`)**: Deletes a movie.
+- **Delete Any Movie (`/delete_any_movie/<int:movie_id>`)**: Deletes any movie by ID.
 - **Manage Movies (`/manage_movies`)**: Lists all movies.
+- **Manage All Movies (`/manage_all_movies`)**: Displays a comprehensive list of all movies.
 - **Reports (`/reports`)**: Displays user and movie count reports.
+- **All Movies Added by User of Current Admin Report (`/all_movies_added_by_user_of_current_admin_report`)**: Displays movies added by users associated with the current admin.
+- **Details View of Movies Added by User of Current Admin Report (`/details_view_of_movies_added_by_user_of_current_admin_report/<int:user_id>`)**: Displays detailed information about movies added by a specific user.
 
 ## API Endpoints
 
@@ -102,21 +129,31 @@ The application will be available at `http://127.0.0.1:5000`.
 - **`/edit_user/<int:user_id>`**: POST - Update user details.
 - **`/delete_user/<int:user_id>`**: POST - Delete a user.
 - **`/manage_users`**: GET - List all users.
+- **`/manage_all_users`**: GET - List all users comprehensively.
 - **`/add_movie`**: POST - Add a new movie to the database.
 - **`/edit_movie/<int:movie_id>`**: POST - Update movie details.
 - **`/delete_movie/<int:movie_id>`**: POST - Delete a movie.
+- **`/delete_any_movie/<int:movie_id>`**: POST - Delete any movie by ID.
 - **`/manage_movies`**: GET - List all movies.
+- **`/manage_all_movies`**: GET - List all movies comprehensively.
 - **`/reports`**: GET - View user and movie count reports.
+- **`/all_movies_added_by_user_of_current_admin_report`**: GET - View movies added by users associated with the current admin.
+- **`/details_view_of_movies_added_by_user_of_current_admin_report/<int:user_id>`**: GET - View detailed report of movies added by a specific user.
 
 ### User API
 
-- **`/dashboard`**: GET - View the user dashboard with the latest movies.
+- **`/dashboard`**: GET - View the user dashboard.
 - **`/my_movies`**: GET - List movies not in the user's favorites.
+- **`/movie/<int:movie_id>`**: GET - View details of a specific movie.
 - **`/user_favorites`**: GET - List favorite movies of the user.
 - **`/add_to_favorites/<int:movie_id>`**: POST - Add a movie to the user's favorites.
 - **`/remove_from_favorites/<int:movie_id>`**: POST - Remove a movie from the user's favorites.
 - **`/user_add_movie`**: GET, POST - Add a new movie (for users).
+- **`/edit_movie/<int:movie_id>`**: GET, POST - Edit an existing movie.
+- **`/delete_movie/<int:movie_id>`**: POST - Delete a user's movie.
 - **`/user_profile`**: GET - View the user's profile information.
+- **`/edit_user_profile/<int:user_id>`**: GET, POST - Edit user profile information.
+
 
 
 ## Development

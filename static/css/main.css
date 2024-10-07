@@ -4107,3 +4107,17 @@ input, select, textarea {
             object-fit: cover; /* Ensures the image covers the entire area */
             border: 2px solid #ccc; /* Optional: adds a border */
         }
+
+        .header-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .header-image {
+                max-width: 100%;
+            }
+        }
